@@ -1,4 +1,4 @@
-
+/*
 String[] parseData(String filename, ArrayList<HashMap<String,Float>> data) {
 
   String t0[] = loadStrings(filename);
@@ -18,4 +18,4 @@ String[] parseData(String filename, ArrayList<HashMap<String,Float>> data) {
   return labels;
 
 }
-
+*/

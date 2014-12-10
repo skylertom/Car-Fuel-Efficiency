@@ -10,6 +10,7 @@ Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.90);
 // Views:
 ParallelCoord pc;
 
+/*
 void setup() {
   size(900,400);
   smooth();
@@ -18,6 +19,7 @@ void setup() {
   String labels[] = parseData(filename, data);
   pc = new ParallelCoord(pc_vp, data, labels);
 }
+*/
 
 void draw() {
   background(255); 
