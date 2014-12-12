@@ -2,11 +2,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
-import processing.core.*; 
 
 class ParallelCoord {
 	
-  Table data;
+  ArrayList<HashMap<String,Float>> data;
   ArrayList<Boolean> marked;
   boolean marks[];
   ArrayList<Integer> markedIndexes;
@@ -17,9 +16,9 @@ class ParallelCoord {
   Viewport vp;
   Rectangle selectArea = null;
 
-  ParallelCoord(Viewport vp, Table data, String[] labels) {
+  ParallelCoord(Viewport vp, ArrayList<HashMap<String,Float>> data, String[] labels) {
     this.data = data;
-    marks = new boolean[data.getRowCount()];
+    marks = new boolean[data.size()];
     Arrays.fill(marks, false);
     this.labels = labels;
     this.vp = vp;
@@ -45,17 +44,21 @@ class ParallelCoord {
     min = new HashMap<String,Float>();
     max = new HashMap<String,Float>();
     for (int i = 0; i < labels.length; i++) {
-      String text = labels[i];
-      String col[] = data.getStringColumn(text);
-      float curmin = Float.parseFloat(col[0]);
-      float curmax = Float.parseFloat(col[0]);
-      for (int j = 0; j < col.length; j++) {
-        float num = Float.parseFloat(col[j]);
-        if (num < curmin) curmin = num;
-        if (num > curmax) curmax = num;
+      min.put(labels[i], data.get(0).get(labels[i]));
+      max.put(labels[i], data.get(0).get(labels[i]));
+    }
+
+    Float a,b,c;
+    for (int i = 0; i < data.size(); i++) {
+      for (int j = 0; j < labels.length; j++) {
+        a = min.get(labels[j]);
+        b = max.get(labels[j]);
+        c = data.get(i).get(labels[j]);
+        if (a > c)
+          min.put(labels[j], c);
+        if (b < c)
+          max.put(labels[j], c);
       }
-      min.put(text, curmin);
-      max.put(text, curmax);
     }
   }
 
@@ -74,25 +77,24 @@ class ParallelCoord {
   }
 
   void drawData() {
-    //HashMap<String,Float> datum; // tmp loop data point
-    TableRow datum;
+    HashMap<String,Float> datum; // tmp loop data point
     Axis ax1,ax2; // tmp loop axes
     float y1,y2; // tmp loop floats
 
-    for (int i = 0; i < data.getRowCount(); i++) {
-      datum = data.getRow(i);
-      vp.p.stroke(0, 120);
-      if (marks[i]) vp.p.stroke(255, 0, 0);
+    for (int i = 0; i < data.size(); i++) {
+      datum = data.get(i);
+      stroke(0, 120);
+      if (marks[i]) stroke(255, 0, 0);
       for (int j = 0; j < labels.length - 1; j++) {
         ax1 = axes.get(labels[j]);
         ax2 = axes.get(labels[j+1]);
-        y1 = datum.getFloat(labels[j]);
-        y2 = datum.getFloat(labels[j+1]);
-        vp.p.line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
+        y1 = datum.get(labels[j]);
+        y2 = datum.get(labels[j+1]);
+        line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
       for (int m = 0; m <axes.size(); m++){
-        axes.get(labels[m]).moveAxis((float)vp.p.mouseX/vp.p.width);
+        axes.get(labels[m]).moveAxis((float)mouseX/width);
       }
     }
   }
@@ -114,38 +116,38 @@ class ParallelCoord {
   
   
   public void drawSelectedArea() {
-    vp.p.pushStyle();
+    pushStyle();
     for (int i = 0; i < axes.size(); i++){
       //Limit the selection just to Y axises. 
-      if (vp.p.mouseY < axes.get(labels[i]).getH()*0.999 ){
-        if ( vp.p.mouseX < axes.get(labels[i]).getX()+40) {
+      if (mouseY < axes.get(labels[i]).getH()*0.999 ){
+        if ( mouseX < axes.get(labels[i]).getX()+40) {
         if (selectArea != null) {
-          vp.p.fill(171,217,233,80);
-          vp.p.rectMode(vp.p.CORNER);
-          vp.p.rect(selectArea.p1.x, selectArea.p1.y,
+          fill(171,217,233,80);
+          rectMode(CORNER);
+          rect(selectArea.p1.x, selectArea.p1.y,
             selectArea.p2.x - selectArea.p1.x, selectArea.p2.y - selectArea.p1.y);
 
         }
       }
   }
 }
-    vp.p.popStyle();
+    popStyle();
   }
 
   void hover() {
     Arrays.fill(marks, false);
-    TableRow datum;
+    HashMap<String,Float> datum; // tmp loop data point
     Axis ax1,ax2; // tmp loop axes
     float y1,y2; // tmp loop floats
     
 
-    for (int i = 0; i < data.getRowCount(); i++) {
-      datum = data.getRow(i);
+    for (int i = 0; i < data.size(); i++) {
+      datum = data.get(i);
       for (int j = 0; j < labels.length - 1; j++) {
         ax1 = axes.get(labels[j]);
         ax2 = axes.get(labels[j+1]);
-        y1 = datum.getFloat(labels[j]);
-        y2 = datum.getFloat(labels[j+1]);
+        y1 = datum.get(labels[j]);
+        y2 = datum.get(labels[j+1]);
         float tempLine[] = {ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2)};
         if (selectArea != null) {
           if (intersect(selectArea, tempLine)) {
@@ -153,7 +155,7 @@ class ParallelCoord {
             break;
           }
         }
-        else if (intersect(vp.p.mouseX, vp.p.mouseY, tempLine)) {
+        else if (intersect(mouseX, mouseY, tempLine)) {
           marks[i] = true;
           markedIndexes.add(i);
           break;

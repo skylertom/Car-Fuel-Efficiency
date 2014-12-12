@@ -1,5 +1,8 @@
-import java.util.*;
-import processing.core.*; 
+//min max 
+//number of ticks
+//location
+//draw
+//animation
 
 class Axis {
 	//add x y values
@@ -15,36 +18,36 @@ class Axis {
 
 	class TextLabel {  
   //Vector coordinates for the box around text
-		processing.core.PVector p1 = null;
-		processing.core.PVector p2 = null;
-		float a  = vp.p.textAscent() * (float)0.4;
+		PVector p1 = null;
+		PVector p2 = null;
+		float a  = textAscent() * (float)0.4;
 		String label = ""; 
 		boolean intersect;
 		TextLabel(float tx, float ty,  String label_) {
 			float x1_ = tx;
 			float y1_ = ty - a; 
-			float x2_ = x1_ + vp.p.textWidth(label_);
+			float x2_ = x1_ + textWidth(label_);
 			float y2_ = y1_+ a;
 			float x1 = x1_ < x2_ ? x1_ : x2_;
 			float x2 = x1_ >= x2_ ? x1_ : x2_;
 			float y1 = y1_ < y2_ ? y1_ : y2_;
 			float y2 = y1_ >= y2_ ? y1_ : y2_;
-			p1 = new processing.core.PVector(x1, y1);
-			p2 = new processing.core.PVector(x2, y2);
+			p1 = new PVector(x1, y1);
+			p2 = new PVector(x2, y2);
 			label = label_;
 		}
 
 		void drawTextLabel(){
 			if (isIntersecting()){
-				vp.p.fill(255, 0, 0    );
+				fill(255, 0, 0    );
 			} else {
-				vp.p.fill(0, 0, 0);
+				fill(0, 0, 0);
 			}
-			vp.p.text(label, p1.x, p2.y);
+			text(label, p1.x, p2.y);
 		}
 
 		boolean isIntersecting(){
-			if (vp.p.mouseX > p1.x-10 && vp.p.mouseX < p2.x+10 && vp.p.mouseY > p1.y-30 && vp.p.mouseY < p2.y+40){
+			if (mouseX > p1.x-10 && mouseX < p2.x+10 && mouseY > p1.y-30 && mouseY < p2.y+40){
 				return true;
 			} else {
 				return false;
@@ -70,12 +73,12 @@ class Axis {
 	}
 
 	void draw() {
-		vp.p.fill(200);
-		vp.p.rect(vp.getX(), vp.getY(), vp.getW()/30, vp.getH()*margin);
-		vp.p.stroke(0);
-		vp.p.fill(0);
+		fill(200);
+		rect(vp.getX(), vp.getY(), vp.getW()/30, vp.getH()*margin);
+		stroke(0);
+		fill(0);
 		drawTicksLabels();
-		labelCoord = new TextLabel( vp.getX()-(vp.p.textWidth(label)/(float)2.4), vp.getY() + vp.getH(), label); 
+		labelCoord = new TextLabel( vp.getX()-(textWidth(label)/(float)2.4), vp.getY() + vp.getH(), label); 
 		labelCoord.drawTextLabel();
 	}
 
@@ -86,7 +89,7 @@ class Axis {
 		if (flipped) {
 			current =  (float)(Math.round(minValue * 100.0) / 100.0); 
 			for (int i = 0; i <= numTicks; i++){
-				vp.p.line(vp.getX() - vp.getW()/39,
+				line(vp.getX() - vp.getW()/39,
 					vp.getY() + (incrementValue*i),
 					vp.getX() + vp.getW()/16,
 					vp.getY() + (incrementValue*i));
@@ -98,7 +101,7 @@ class Axis {
 		}
 		else {
 			for (int i = 0; i <= numTicks; i++){
-				vp.p.line(vp.getX() - vp.getW()/39,
+				line(vp.getX() - vp.getW()/39,
 					vp.getY() + (incrementValue*i),
 					vp.getX() + vp.getW()/16,
 					vp.getY() + (incrementValue*i));
@@ -127,11 +130,11 @@ class Axis {
 	}
 
 	boolean isOnMe() {
-		return (getY()<vp.p.mouseY&&getX()<vp.p.mouseX&&(getX()+getW())>vp.p.mouseX&&(getY()+getH())>vp.p.mouseY);
+		return (getY()<mouseY&&getX()<mouseX&&(getX()+getW())>mouseX&&(getY()+getH())>mouseY);
 	}
 
 	void moveAxis(float x){
-		if (vp.p.mousePressed){
+		if (mousePressed){
 			if (labelCoord != null && labelCoord.isIntersecting()){
   		    vp.setX(x);
   		}

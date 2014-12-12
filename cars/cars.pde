@@ -5,9 +5,11 @@ int numRows_15;
 
 String[] data_001;
 
+/*
 void setup() {
   parseData(); 
 }
+*/
 
 void parseData() {
   data_00 = loadTable("all_alpha_00.csv", "header");
@@ -17,6 +19,7 @@ void parseData() {
   
   data_001 = loadStrings("all_alpha_00.csv");
   println(data_001.length);
+  println(data_001[1]);
   println(data_001[1546]);
   
   data_15 = loadTable("all_alpha_00.csv", "header");

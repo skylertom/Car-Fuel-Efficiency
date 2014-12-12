@@ -6,7 +6,7 @@ import processing.core.*;
 
 class ParallelCoord {
 	
-  Table data;
+  processing.core.Table data;
   ArrayList<Boolean> marked;
   boolean marks[];
   ArrayList<Integer> markedIndexes;
