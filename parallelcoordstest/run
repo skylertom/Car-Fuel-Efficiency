@@ -1,5 +1,0 @@
-#!/bin/bash
-tmpdir=`mktemp -d`
-processing-java --output=$tmpdir --force --run --sketch=../lab08
-sleep 0.1
-rm -rf $tmpdir

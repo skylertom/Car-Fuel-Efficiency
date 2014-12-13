@@ -2,11 +2,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
-import processing.core.*; 
 
 class ParallelCoord {
 	
-  Table data;
+  Table _data;
+  boolean dragging = false; // whether or not the mouse is being dragged
+  PVector cornerA = new PVector(0,0);
   ArrayList<Boolean> marked;
   boolean marks[];
   ArrayList<Integer> markedIndexes;
@@ -17,9 +18,9 @@ class ParallelCoord {
   Viewport vp;
   Rectangle selectArea = null;
 
-  ParallelCoord(Viewport vp, Table data, String[] labels) {
-    this.data = data;
-    marks = new boolean[data.getRowCount()];
+  ParallelCoord(Viewport vp, String[] labels, Table _data) {
+    this._data = _data;
+    marks = new boolean[_data.getRowCount()];
     Arrays.fill(marks, false);
     this.labels = labels;
     this.vp = vp;
@@ -35,32 +36,44 @@ class ParallelCoord {
        (float)1.0);
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
-
-
     }
   }
 
+  void mousePressed() {
+    clearSelectedArea();
+    dragging = false;
+    cornerA.x = mouseX;
+    cornerA.y = mouseY;
+  }
+
+  void mouseDragged() {
+    dragging = true;
+    setSelectedArea(cornerA.x, cornerA.y, mouseX, mouseY);
+  }
+
+  void mouseReleased() {
+    if (!dragging) switchAxis();
+  }
+
   void updateMinMax() {
-		//initialize these
     min = new HashMap<String,Float>();
     max = new HashMap<String,Float>();
     for (int i = 0; i < labels.length; i++) {
-      String text = labels[i];
-      String col[] = data.getStringColumn(text);
-      float curmin = Float.parseFloat(col[0]);
-      float curmax = Float.parseFloat(col[0]);
-      for (int j = 0; j < col.length; j++) {
-        float num = Float.parseFloat(col[j]);
-        if (num < curmin) curmin = num;
-        if (num > curmax) curmax = num;
+      String mytext = labels[i];
+      String nums[] = _data.getStringColumn(mytext);
+      float mymin = Float.parseFloat(nums[0]);
+      float mymax = Float.parseFloat(nums[0]);
+      for (int j = 0; j < nums.length; j++) {
+        float temp = Float.parseFloat(nums[j]);
+        if (temp < mymin) mymin = temp;
+        if (temp > mymax) mymax = temp;
       }
-      min.put(text, curmin);
-      max.put(text, curmax);
+      min.put(mytext, mymin);
+      max.put(mytext, mymax);
     }
   }
 
   void draw() {
-   
     hover();
     drawData();
     Iterator<String> iter = axes.keySet().iterator();
@@ -74,25 +87,20 @@ class ParallelCoord {
   }
 
   void drawData() {
-    //HashMap<String,Float> datum; // tmp loop data point
-    TableRow datum;
-    Axis ax1,ax2; // tmp loop axes
-    float y1,y2; // tmp loop floats
-
-    for (int i = 0; i < data.getRowCount(); i++) {
-      datum = data.getRow(i);
-      vp.p.stroke(0, 120);
-      if (marks[i]) vp.p.stroke(255, 0, 0);
+    for (int i = 0; i < _data.getRowCount(); i++) {
+      TableRow datum = _data.getRow(i);
+      stroke(0, 120);
+      if (marks[i]) stroke(255, 0, 0);
       for (int j = 0; j < labels.length - 1; j++) {
-        ax1 = axes.get(labels[j]);
-        ax2 = axes.get(labels[j+1]);
-        y1 = datum.getFloat(labels[j]);
-        y2 = datum.getFloat(labels[j+1]);
-        vp.p.line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
+        Axis ax1 = axes.get(labels[j]);
+        Axis ax2 = axes.get(labels[j+1]);
+        float y1 = datum.getFloat(labels[j]);
+        float y2 = datum.getFloat(labels[j+1]);
+        line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
       for (int m = 0; m <axes.size(); m++){
-        axes.get(labels[m]).moveAxis((float)vp.p.mouseX/vp.p.width);
+        axes.get(labels[m]).moveAxis((float)mouseX/width);
       }
     }
   }
@@ -114,22 +122,21 @@ class ParallelCoord {
   
   
   public void drawSelectedArea() {
-    vp.p.pushStyle();
+    pushStyle();
     for (int i = 0; i < axes.size(); i++){
       //Limit the selection just to Y axises. 
-      if (vp.p.mouseY < axes.get(labels[i]).getH()*0.999 ){
-        if ( vp.p.mouseX < axes.get(labels[i]).getX()+40) {
-        if (selectArea != null) {
-          vp.p.fill(171,217,233,80);
-          vp.p.rectMode(vp.p.CORNER);
-          vp.p.rect(selectArea.p1.x, selectArea.p1.y,
-            selectArea.p2.x - selectArea.p1.x, selectArea.p2.y - selectArea.p1.y);
-
+      if (mouseY < axes.get(labels[i]).getH()*0.999 ){
+        if ( mouseX < axes.get(labels[i]).getX()+40) {
+          if (selectArea != null) {
+            fill(171,217,233,80);
+            rectMode(CORNER);
+            rect(selectArea.p1.x, selectArea.p1.y,
+              selectArea.p2.x - selectArea.p1.x, selectArea.p2.y - selectArea.p1.y);
+          }
         }
       }
-  }
-}
-    vp.p.popStyle();
+    }
+    popStyle();
   }
 
   void hover() {
@@ -137,10 +144,8 @@ class ParallelCoord {
     TableRow datum;
     Axis ax1,ax2; // tmp loop axes
     float y1,y2; // tmp loop floats
-    
-
-    for (int i = 0; i < data.getRowCount(); i++) {
-      datum = data.getRow(i);
+    for (int i = 0; i < _data.getRowCount(); i++) {
+      datum = _data.getRow(i);
       for (int j = 0; j < labels.length - 1; j++) {
         ax1 = axes.get(labels[j]);
         ax2 = axes.get(labels[j+1]);
@@ -153,7 +158,7 @@ class ParallelCoord {
             break;
           }
         }
-        else if (intersect(vp.p.mouseX, vp.p.mouseY, tempLine)) {
+        else if (intersect(mouseX, mouseY, tempLine)) {
           marks[i] = true;
           markedIndexes.add(i);
           break;
