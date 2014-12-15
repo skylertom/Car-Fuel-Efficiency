@@ -17,7 +17,7 @@ class ParallelCoord {
   HashMap<String,Axis> axes;
   Viewport vp;
   Rectangle selectArea = null;
-  ArrayList<float[]> mylines;
+  Controller controller;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
@@ -38,9 +38,12 @@ class ParallelCoord {
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
-    mylines = new ArrayList<float[]>();
     hover();
     drawData();
+  }
+
+  void setController(Controller x) {
+    this.controller = x;
   }
 
   void mousePressed() {
@@ -80,33 +83,12 @@ class ParallelCoord {
   void draw() {
     hover();
     drawData();
-    //small();
-    //drawlines();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
       String key = iter.next();
       axes.get(key).draw();
     }
     drawSelectedArea();
-  }
-
-  void small() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      if (intersect(mouseX, mouseY, x)) {
-        x[4] = 1;
-      }
-      x[4] = 0;
-    }
-  }
-
-  void drawlines() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      stroke(0, 120);
-      if (x[4] == 1) stroke(255, 0, 0);
-      line(x[0], x[1], x[2], x[3]);
-    }
   }
 
   void drawData() {
