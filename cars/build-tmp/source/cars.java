@@ -28,24 +28,29 @@ String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.05f, 0.80f, 0.40f);
-
+Viewport class_vp = new Viewport(root_vp, 0.05f, 0.50f, 0.4f, 0.40f);
+Viewport brand_vp = new Viewport(root_vp, 0.55f, 0.50f, 0.40f, 0.40f);
 
 //views:
 ParallelCoord pc;
+ClassGraph class_bg;
+BrandGraph brand_bg;
 
 public void setup() {
   size(900,600);
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(false); 
+  parseData(true); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  pc = new ParallelCoord(pc_vp, pclabels, data_00);
+  pc = new ParallelCoord(pc_vp, pclabels, data_15);
+  class_bg = new ClassGraph(class_vp, data_00);
 }
 
 public void draw() {
   background(255);
   pc.draw();
+  class_bg.drawAxes();
 }
 
 public void mousePressed() {
@@ -103,6 +108,10 @@ public void parseTable(Table t) {
       String brand = x.substring(0, x.indexOf(' '));
       if (brand.equals("ASTON")) {
         brand += " MARTIN";
+      } else if (brand.equals("ALFA")) {
+        brand += " ROMEO"; 
+      } else if (brand.equals("LAND")) {
+        brand += " ROVER"; 
       }
       row.setString("Brand", brand);
       lastrow = x;
@@ -253,6 +262,85 @@ class Axis {
   }
 }
 
+public class BrandGraph {
+  Viewport vp;
+  Table data;
+ 
+  BrandGraph(Viewport vp, Table d) {
+    this.vp = vp;
+    data = d;
+  } 
+  
+  
+  
+}
+public class ClassGraph {
+  Viewport vp;
+  Table data;
+  HashMap<String, Float> classes;
+  Float min, max;
+  int vert_ticks = 7;
+  int extend = 10;
+  
+  ClassGraph(Viewport vp, Table d) {
+     this.vp = vp;
+     data = d;
+     classes = new HashMap<String, Float>();
+     min = 0.0f;
+     max = 0.0f;
+     filterData();
+  }
+  
+  public void filterData() {
+    for (int i = 0; i < data.getRowCount(); i++) {
+       String vehClass = data.getString(i, "Veh Class");
+       Float avg = classes.get(vehClass);
+       Float rowMPG = data.getFloat(i, "Cmb MPG");
+       if (avg == null) {
+         classes.put(vehClass, rowMPG);
+       } else {
+         float rowVal = data.getFloat(i, "Cmb MPG");
+         avg = (avg + rowMPG) / 2;
+         classes.put(vehClass, avg);
+       }
+    }
+    println(classes);
+  }
+  
+  public void drawAxes() {
+    String[] vehClasses = classes.keySet().toArray(new String[0]);
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW() + extend, vp.getY() + vp.getH());
+    float horiz_dist = vp.getW() / classes.size();
+    for (int i = 0; i < classes.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2) + extend;
+      line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
+      pushMatrix();
+      translate(h_ticks, vp.getY() + vp.getH() + 10);
+      rotate(HALF_PI/4);
+      textAlign(LEFT);
+      text(vehClasses[i], -7, 6);
+      popMatrix();
+    }
+    
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
+    for (Float f : classes.values()) {
+      if (min == 0.0f) {
+        min = f; 
+      } else if (min > f) {
+        min = f; 
+      }
+      if (f > max) {
+        max = f; 
+      }
+    }
+    float vert_dist = vp.getH() / vert_ticks;
+    for (int i = 0; i < vert_ticks; i++) {
+      float v_ticks = (vert_dist * i) + vp.getY();
+      line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
+    }
+//    println(vp.getX(), vp.getY(), vp.getW(), vp.getH());
+  }
+}
 
 
 
@@ -369,6 +457,7 @@ class ParallelCoord {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
       if (marks[i]) stroke(255, 0, 0);
+      if (marks[i]) println(datum.getString("Model"));
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);

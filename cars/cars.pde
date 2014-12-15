@@ -20,9 +20,9 @@ void setup() {
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(false); 
+  parseData(true); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  pc = new ParallelCoord(pc_vp, pclabels, data_00);
+  pc = new ParallelCoord(pc_vp, pclabels, data_15);
   class_bg = new ClassGraph(class_vp, data_00);
 }
 

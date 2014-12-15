@@ -114,6 +114,7 @@ class ParallelCoord {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
       if (marks[i]) stroke(255, 0, 0);
+      if (marks[i]) println(datum.getString("Model"));
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);
