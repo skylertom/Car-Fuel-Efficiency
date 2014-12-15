@@ -27,27 +27,24 @@ int numRows_15;
 String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
-Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.05f, 0.80f, 0.90f);
+Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.05f, 0.80f, 0.40f);
 
 
 //views:
 ParallelCoord pc;
 
 public void setup() {
-  size(900,400);
+  size(900,600);
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(); 
+  parseData(false); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   pc = new ParallelCoord(pc_vp, pclabels, data_00);
 }
 
-public void parse(String filename) {
-}
-
 public void draw() {
-  background(255); 
+  background(255);
   pc.draw();
 }
 
@@ -63,25 +60,23 @@ public void mouseReleased() {
   pc.mouseReleased();
 }
 
-public void parseData() {
-  data_00 = loadTable("all_alpha_00.csv", "header");
-  parseTable(data_00);
-  numRows_00 = data_00.getRowCount();
-  println(numRows_00);
-  
-  data_001 = loadStrings("all_alpha_00.csv");
-  println(data_001.length);
-  println(data_001[1]);
-  println(data_001[1546]);
-  
-  data_15 = loadTable("all_alpha_00.csv", "header");
-  parseTable(data_15);
-  saveTable(data_15, "x.csv");
-  numRows_15 = data_15.getRowCount();
-  println(numRows_15);
+public void parseData(boolean notloaded) {
+  if (notloaded) {
+    data_00 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_00);
+    saveTable(data_00, "parsed_00.csv");
+    data_15 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_15);
+    saveTable(data_15, "parsed_15.csv");
+  }
+  else {
+    data_00 = loadTable("parsed_00.csv", "header");
+    data_15 = loadTable("parsed_15.csv", "header");
+  }
 }
 
 public void parseTable(Table t) {
+  String lastrow = "";
   t.addColumn("Brand");
   for (int i = 0; i < t.getRowCount(); i++) {
     TableRow row = t.getRow(i);
@@ -101,7 +96,16 @@ public void parseTable(Table t) {
       t.removeRow(i--);
     else {
       String x = row.getString("Model");
-      row.setString("Brand", x.substring(0, x.indexOf(' ')));
+      if (x.equals(lastrow)) {
+        t.removeRow(i--);
+        continue;
+      }
+      String brand = x.substring(0, x.indexOf(' '));
+      if (brand.equals("ASTON")) {
+        brand += " MARTIN";
+      }
+      row.setString("Brand", brand);
+      lastrow = x;
     }
   }
 }
@@ -268,6 +272,7 @@ class ParallelCoord {
   HashMap<String,Axis> axes;
   Viewport vp;
   Rectangle selectArea = null;
+  ArrayList<float[]> mylines;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
@@ -288,6 +293,9 @@ class ParallelCoord {
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
+    mylines = new ArrayList<float[]>();
+    hover();
+    drawData();
   }
 
   public void mousePressed() {
@@ -327,14 +335,33 @@ class ParallelCoord {
   public void draw() {
     hover();
     drawData();
+    //small();
+    //drawlines();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
       String key = iter.next();
       axes.get(key).draw();
     }
-     drawSelectedArea();
+    drawSelectedArea();
+  }
 
-     
+  public void small() {
+    for (int i = 0; i < mylines.size(); i++) {
+      float x[] = mylines.get(i);
+      if (intersect(mouseX, mouseY, x)) {
+        x[4] = 1;
+      }
+      x[4] = 0;
+    }
+  }
+
+  public void drawlines() {
+    for (int i = 0; i < mylines.size(); i++) {
+      float x[] = mylines.get(i);
+      stroke(0, 120);
+      if (x[4] == 1) stroke(255, 0, 0);
+      line(x[0], x[1], x[2], x[3]);
+    }
   }
 
   public void drawData() {
@@ -347,6 +374,7 @@ class ParallelCoord {
         Axis ax2 = axes.get(labels[j+1]);
         float y1 = datum.getFloat(labels[j]);
         float y2 = datum.getFloat(labels[j+1]);
+        //mylines.add(new float[]{ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2), 0});
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
@@ -452,7 +480,7 @@ class ParallelCoord {
     float myslope = (myline[3]-myy)/(myline[2]-myx);
     return Math.abs(realslope-myslope) < .03f;
   }
-}
+};
 
 class Rectangle { // model dragging area
   PVector p1 = null;
@@ -466,7 +494,7 @@ class Rectangle { // model dragging area
     p1 = new PVector(x1, y1);
     p2 = new PVector(x2, y2);
   }
-}
+};
 
 class Range { 
   float x;
@@ -480,7 +508,7 @@ class Range {
     w= w1_;
     h= h1_;
   }
-}
+};
 
 
 //import processing.core.*;

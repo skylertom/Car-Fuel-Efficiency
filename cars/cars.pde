@@ -6,27 +6,24 @@ int numRows_15;
 String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
-Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.90);
+Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.40);
 
 
 //views:
 ParallelCoord pc;
 
 void setup() {
-  size(900,400);
+  size(900,600);
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(); 
+  parseData(false); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   pc = new ParallelCoord(pc_vp, pclabels, data_00);
 }
 
-void parse(String filename) {
-}
-
 void draw() {
-  background(255); 
+  background(255);
   pc.draw();
 }
 
@@ -42,25 +39,23 @@ void mouseReleased() {
   pc.mouseReleased();
 }
 
-void parseData() {
-  data_00 = loadTable("all_alpha_00.csv", "header");
-  parseTable(data_00);
-  numRows_00 = data_00.getRowCount();
-  println(numRows_00);
-  
-  data_001 = loadStrings("all_alpha_00.csv");
-  println(data_001.length);
-  println(data_001[1]);
-  println(data_001[1546]);
-  
-  data_15 = loadTable("all_alpha_00.csv", "header");
-  parseTable(data_15);
-  saveTable(data_15, "x.csv");
-  numRows_15 = data_15.getRowCount();
-  println(numRows_15);
+void parseData(boolean notloaded) {
+  if (notloaded) {
+    data_00 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_00);
+    saveTable(data_00, "parsed_00.csv");
+    data_15 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_15);
+    saveTable(data_15, "parsed_15.csv");
+  }
+  else {
+    data_00 = loadTable("parsed_00.csv", "header");
+    data_15 = loadTable("parsed_15.csv", "header");
+  }
 }
 
 void parseTable(Table t) {
+  String lastrow = "";
   t.addColumn("Brand");
   for (int i = 0; i < t.getRowCount(); i++) {
     TableRow row = t.getRow(i);
@@ -80,7 +75,16 @@ void parseTable(Table t) {
       t.removeRow(i--);
     else {
       String x = row.getString("Model");
-      row.setString("Brand", x.substring(0, x.indexOf(' ')));
+      if (x.equals(lastrow)) {
+        t.removeRow(i--);
+        continue;
+      }
+      String brand = x.substring(0, x.indexOf(' '));
+      if (brand.equals("ASTON")) {
+        brand += " MARTIN";
+      }
+      row.setString("Brand", brand);
+      lastrow = x;
     }
   }
 }

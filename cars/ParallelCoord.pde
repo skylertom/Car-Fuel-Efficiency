@@ -17,6 +17,7 @@ class ParallelCoord {
   HashMap<String,Axis> axes;
   Viewport vp;
   Rectangle selectArea = null;
+  ArrayList<float[]> mylines;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
@@ -37,6 +38,9 @@ class ParallelCoord {
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
+    mylines = new ArrayList<float[]>();
+    hover();
+    drawData();
   }
 
   void mousePressed() {
@@ -76,14 +80,33 @@ class ParallelCoord {
   void draw() {
     hover();
     drawData();
+    //small();
+    //drawlines();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
       String key = iter.next();
       axes.get(key).draw();
     }
-     drawSelectedArea();
+    drawSelectedArea();
+  }
 
-     
+  void small() {
+    for (int i = 0; i < mylines.size(); i++) {
+      float x[] = mylines.get(i);
+      if (intersect(mouseX, mouseY, x)) {
+        x[4] = 1;
+      }
+      x[4] = 0;
+    }
+  }
+
+  void drawlines() {
+    for (int i = 0; i < mylines.size(); i++) {
+      float x[] = mylines.get(i);
+      stroke(0, 120);
+      if (x[4] == 1) stroke(255, 0, 0);
+      line(x[0], x[1], x[2], x[3]);
+    }
   }
 
   void drawData() {
@@ -96,6 +119,7 @@ class ParallelCoord {
         Axis ax2 = axes.get(labels[j+1]);
         float y1 = datum.getFloat(labels[j]);
         float y2 = datum.getFloat(labels[j+1]);
+        //mylines.add(new float[]{ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2), 0});
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
@@ -201,7 +225,7 @@ class ParallelCoord {
     float myslope = (myline[3]-myy)/(myline[2]-myx);
     return Math.abs(realslope-myslope) < .03;
   }
-}
+};
 
 class Rectangle { // model dragging area
   PVector p1 = null;
@@ -215,7 +239,7 @@ class Rectangle { // model dragging area
     p1 = new PVector(x1, y1);
     p2 = new PVector(x2, y2);
   }
-}
+};
 
 class Range { 
   float x;
@@ -229,6 +253,6 @@ class Range {
     w= w1_;
     h= h1_;
   }
-}
+};
 
 
