@@ -7,8 +7,8 @@ String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.40);
-Viewport type_vp = new Viewport(root_vp, 0.05, 0.50, 0.40, 0.40);
-Viewport brand_vp = new Viewport(root_vp, 0.50, 0.50, 0.40, 0.40);
+Viewport class_vp = new Viewport(root_vp, 0.05, 0.50, 0.4, 0.40);
+Viewport brand_vp = new Viewport(root_vp, 0.55, 0.50, 0.40, 0.40);
 
 //views:
 ParallelCoord pc;
@@ -23,13 +23,13 @@ void setup() {
   parseData(false); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   pc = new ParallelCoord(pc_vp, pclabels, data_00);
-  type_bg = new BarGraph(type_vp, data_00);
-  type_bg.drawAxes();
+  class_bg = new ClassGraph(class_vp, data_00);
 }
 
 void draw() {
   background(255);
   pc.draw();
+  class_bg.drawAxes();
 }
 
 void mousePressed() {
