@@ -74,7 +74,8 @@ class Controller {
     }
 
     public void mouseDragged() {
-        pc.mouseDragged();
+        if (!year_toggle) pc.mouseDragged();
+        else pc15.mouseDragged();
     }
     public void mouseReleased() {
         if (!year_toggle) {

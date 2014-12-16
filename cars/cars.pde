@@ -76,12 +76,13 @@ void mouseReleased() {
 
 void parseData(boolean notloaded) {
   if (notloaded) {
-    data_00 = loadTable("all_alpha_00.csv", "header");
-    parseTable(data_00);
-    saveTable(data_00, "parsed_00.csv");
     data_15 = loadTable("all_alpha_15.csv", "header");
     parseTable(data_15);
     saveTable(data_15, "parsed_15.csv");
+    
+    data_00 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_00);
+    saveTable(data_00, "parsed_00.csv");
   }
   else {
     data_00 = loadTable("parsed_00.csv", "header");

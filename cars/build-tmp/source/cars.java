@@ -106,12 +106,13 @@ public void mouseReleased() {
 
 public void parseData(boolean notloaded) {
   if (notloaded) {
-    data_00 = loadTable("all_alpha_00.csv", "header");
-    parseTable(data_00);
-    saveTable(data_00, "parsed_00.csv");
     data_15 = loadTable("all_alpha_15.csv", "header");
     parseTable(data_15);
     saveTable(data_15, "parsed_15.csv");
+    
+    data_00 = loadTable("all_alpha_00.csv", "header");
+    parseTable(data_00);
+    saveTable(data_00, "parsed_00.csv");
   }
   else {
     data_00 = loadTable("parsed_00.csv", "header");
@@ -138,10 +139,6 @@ public void parseTable(Table t) {
       t.removeRow(i--);
     else if (row.getString("Drive").equals(""))
       t.removeRow(i--);
-//    else if (row.getString("Veh Class").equals("small SUV"))
-//      row.setString("Veh Class", "SUV");
-//    else if (row.getString("Veh Class").equals("standard SUV"))
-//      row.setString("Veh Class", "SUV");
     else {
       String x = row.getString("Model");
       if (x.equals(lastrow)) {
@@ -368,7 +365,6 @@ public class BrandGraph {
     if (mode != null) {
       brandsMPG = classBrands.get(mode);
       brands = brandsMPG.keySet().toArray(new String[0]);
-      hover();
       drawDetails();
       drawLabel();
     } else {
@@ -408,7 +404,10 @@ public class BrandGraph {
       if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
         if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
           msg.action = "brands";
-          msg.addCondition(new Condition("Brand","=",brands[i]));
+          Condition brand_cond = new Condition("Brand","=",brands[i]);
+          Condition class_cond = new Condition("Veh Class","=",mode);
+          Condition[] conditions = new Condition[] {brand_cond, class_cond};
+          msg.setConditions(conditions);
           controller.receiveMsg(msg);
           return;
         }
@@ -429,8 +428,8 @@ public class BrandGraph {
     String toPrint = mode.substring(0, 1).toUpperCase() + mode.substring(1);
     text(toPrint + "s", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
     textSize(12);
+    hover();
     horizDetails();
-//    vertDetails();
   }
   
   public void horizDetails() {
@@ -439,8 +438,10 @@ public class BrandGraph {
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
-      if (i == intersect) {
+      if (brands[i].equals(controller.brand)) {
         fill(255,0,0); 
+      } else if (this.intersect == i) {
+        fill(100,100,100);
       } else {
         fill(0,0,0);
       }
@@ -454,6 +455,7 @@ public class BrandGraph {
       textAlign(LEFT);
       text(brands[i], -7, 6);
       popMatrix();
+      fill(0,0,0);
     }     
   }
   
@@ -473,7 +475,7 @@ public class BrandGraph {
     pushMatrix();
     translate(vp.getX() - (vp.getX() * .11f), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
-    text("Average MPG", 0, 0);
+    text("Average Cmb MPG", 0, 0);
     popMatrix();     
   }
   
@@ -508,12 +510,17 @@ public class BrandGraph {
         classBrands.put(vehClass, brandsMPG);
       }
     }
-//    brands = brandMPG.keySet().toArray(new String[0]);
    }
   
   public void drawLabel() {
     DecimalFormat df = new DecimalFormat("##.0");
-    if (intersect != -1) {
+    if (controller.brand != null) {
+      for (int i = 0; i < brands.length; i++) {
+        if (controller.brand.equals(brands[i])) {
+          intersect = i;
+          break;
+        } 
+      }      
       float horiz_dist = vp.getW() / brandsMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
       float bar_height = (brandsMPG.get(brands[intersect]) / max) * vp.getH();      
@@ -521,7 +528,7 @@ public class BrandGraph {
       textAlign(CENTER);
       text(df.format(brandsMPG.get(brands[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
       textAlign(LEFT);
-    }      
+    }
   }
   
 }
@@ -584,7 +591,7 @@ public class ClassGraph {
   }
   
   public void drawGraph() {
-//    hover();
+    hover();
     drawHoriz();
     drawVert();
     drawLabel();
@@ -623,7 +630,6 @@ public class ClassGraph {
   }
   
   public void drawHoriz() {
-    //horizontal axis and bars
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());
     float horiz_dist = vp.getW() / classMPG.size();
     for (int i = 0; i < classMPG.size(); i++) {
@@ -632,11 +638,12 @@ public class ClassGraph {
       float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();
       if (vehClasses[i].equals(controller.carSize)) {
         fill(255,0,0); 
+      } else if (this.intersect == i) {
+        fill(100,100,100);
       } else {
         fill(0,0,0);
       }
       rect(h_ticks - (horiz_dist / 4), vp.getY() + (vp.getH() - bar_height), horiz_dist / 2, bar_height);
-//      fill(0,0,0);
       pushMatrix();
       translate(h_ticks, vp.getY() + vp.getH() + 10);
       rotate(HALF_PI/4);
@@ -664,7 +671,7 @@ public class ClassGraph {
     pushMatrix();
     translate(vp.getX() - (vp.getX() * .7f), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
-    text("Average MPG", 0, 0);
+    text("Average Cmb MPG", 0, 0);
     popMatrix();
   }
   
@@ -682,7 +689,7 @@ public class ClassGraph {
       float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      
       fill(0,0,0);
       text(df.format(classMPG.get(vehClasses[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);      
-    } 
+    }
   }
 }
 class Condition {
@@ -753,6 +760,7 @@ class Controller {
     BrandGraph brand_bg;
     BrandGraph brand_bg15;
     String carSize = null; //the car type in the brand graph
+    String brand = null;
     boolean pcmarks[] = null;
 
     public Controller() {
@@ -806,18 +814,23 @@ class Controller {
     }
 
     public void mouseDragged() {
-        pc.mouseDragged();
+        if (!year_toggle) pc.mouseDragged();
+        else pc15.mouseDragged();
     }
     public void mouseReleased() {
         if (!year_toggle) {
             pc.mouseReleased();
             class_bg.mouseClick();
-//            brand_bg.mouseClick();
+            if (brand_bg.brandsMPG != null) {
+              brand_bg.mouseClick();
+            }
         }
         else {
             pc15.mouseReleased();
             class_bg15.mouseClick();
-//            brand_bg15.mouseClick();
+            if (brand_bg15.brandsMPG != null) {
+              brand_bg15.mouseClick();            
+            }
         }
     }
     
@@ -825,6 +838,7 @@ class Controller {
         if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
         else pcmarks = new boolean[data_15.getRowCount()];
         carSize = null;
+        brand = null;
         setMarksOfViews();
     }
 
@@ -848,8 +862,13 @@ class Controller {
         }
         if (msg.action.equals("new graph")) {
           carSize = msg.conds[0].value;
+          brand = null;
+        } else if (msg.action.equals("brands")) {
+          brand = msg.conds[0].value;
+          carSize = msg.conds[1].value; 
         } else {
           carSize = null; 
+          brand = null;
         }
     }
 
@@ -870,6 +889,9 @@ class Controller {
             if (!year_toggle) brand_bg.setMode(msg.conds[0].value);
             else brand_bg15.setMode(msg.conds[0].value);
             carSize = msg.conds[0].value;
+        }
+        if (msg.action.equals("brands")) {
+ 
         }
         makeMarks(msg);
         setMarksOfViews();
@@ -959,7 +981,7 @@ class Message {
 
 
 class ParallelCoord {
-	String name = "ParallelCoordinates";
+  String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
   int currentaxis;
@@ -1072,7 +1094,10 @@ class ParallelCoord {
     for (int i = 0; i < _data.getRowCount(); i++) {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
-      if (pcmarks!=null && pcmarks[i]) stroke(255, 0, 0);
+      if (pcmarks!=null && pcmarks[i]) {
+        stroke(255, 0, 0);
+        strokeWeight(2);
+      }
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);
@@ -1081,6 +1106,7 @@ class ParallelCoord {
         //mylines.add(new float[]{ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2), 0});
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
+      strokeWeight(1);
 
     }
   }
