@@ -39,7 +39,6 @@ public class BrandGraph {
   }
 
   void drawGraph() {
-//    hover();
     drawHoriz();
     drawVert();
     vertDetails();
@@ -111,7 +110,6 @@ public class BrandGraph {
     textSize(12);
     hover();
     horizDetails();
-//    vertDetails();
   }
   
   void horizDetails() {
@@ -192,7 +190,6 @@ public class BrandGraph {
         classBrands.put(vehClass, brandsMPG);
       }
     }
-//    brands = brandMPG.keySet().toArray(new String[0]);
    }
   
   void drawLabel() {
@@ -212,15 +209,6 @@ public class BrandGraph {
       text(df.format(brandsMPG.get(brands[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
       textAlign(LEFT);
     }
-/*    if (this.intersect != -1) {
-      float horiz_dist = vp.getW() / brandsMPG.size();
-      float h_ticks = vp.getX() + (horiz_dist * this.intersect) + (horiz_dist / 2);
-      float bar_height = (brandsMPG.get(brands[this.intersect]) / max) * vp.getH();      
-      fill(0,0,0);
-      textAlign(CENTER);
-      text(df.format(brandsMPG.get(brands[this.intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
-      textAlign(LEFT);      
-    }    */
   }
   
 }

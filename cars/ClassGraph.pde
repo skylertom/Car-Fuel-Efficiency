@@ -96,7 +96,6 @@ public class ClassGraph {
   }
   
   void drawHoriz() {
-    //horizontal axis and bars
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());
     float horiz_dist = vp.getW() / classMPG.size();
     for (int i = 0; i < classMPG.size(); i++) {
@@ -157,12 +156,5 @@ public class ClassGraph {
       fill(0,0,0);
       text(df.format(classMPG.get(vehClasses[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);      
     }
-/*    if (this.intersect != -1) {
-      float horiz_dist = vp.getW() / classMPG.size();
-      float h_ticks = vp.getX() + (horiz_dist * this.intersect) + (horiz_dist / 2);
-      float bar_height = (classMPG.get(vehClasses[this.intersect]) / max) * vp.getH();      
-      fill(0,0,0);
-      text(df.format(classMPG.get(vehClasses[this.intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);            
-    } */
   }
 }

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Arrays;
 
 class ParallelCoord {
-	String name = "ParallelCoordinates";
+  String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
   PVector cornerA = new PVector(0,0);
@@ -94,7 +94,10 @@ class ParallelCoord {
     for (int i = 0; i < _data.getRowCount(); i++) {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
-      if (pcmarks!=null && pcmarks[i]) stroke(255, 0, 0);
+      if (pcmarks!=null && pcmarks[i]) {
+        stroke(255, 0, 0);
+        strokeWeight(2);
+      }
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);
@@ -103,6 +106,7 @@ class ParallelCoord {
         //mylines.add(new float[]{ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2), 0});
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
+      strokeWeight(1);
 
       for (int m = 0; m <axes.size(); m++){
         axes.get(labels[m]).moveAxis((float)mouseX/width);
