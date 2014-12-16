@@ -96,10 +96,12 @@ public class BrandGraph {
   }
   
   void drawHoriz() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
   }
   
   void drawVert() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());     
   }
   
@@ -116,6 +118,7 @@ public class BrandGraph {
     for (int i = 0; i < brandsMPG.size(); i++) {
       float horiz_dist = vp.getW() / brandsMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
+      stroke(0);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
       if (brands[i].equals(controller.brand)) {
@@ -140,6 +143,7 @@ public class BrandGraph {
   }
   
   void vertDetails() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
     float iter = 0;
@@ -147,6 +151,7 @@ public class BrandGraph {
     DecimalFormat df = new DecimalFormat("##.0");    
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
+      stroke(0);
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);

@@ -96,6 +96,7 @@ public class ClassGraph {
   }
   
   void drawHoriz() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());
     float horiz_dist = vp.getW() / classMPG.size();
     for (int i = 0; i < classMPG.size(); i++) {
@@ -122,6 +123,7 @@ public class ClassGraph {
   
   void drawVert() {
     //vertical axis
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
     float iter = 0;
@@ -129,6 +131,7 @@ public class ClassGraph {
     DecimalFormat df = new DecimalFormat("##.0");
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
+      stroke(0);
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);

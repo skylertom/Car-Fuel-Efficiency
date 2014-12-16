@@ -36,6 +36,7 @@ boolean year_toggle;
 float toggle_x, toggle_y, toggle_w, toggle_h;
 
 String pclabels[];
+String pclabels15[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.03f, 0.80f, 0.40f);
 Viewport class_vp = new Viewport(root_vp, 0.07f, 0.50f, 0.30f, 0.40f);
@@ -109,7 +110,7 @@ public void parseData(boolean notloaded) {
     data_15 = loadTable("all_alpha_15.csv", "header");
     parseTable(data_15);
     saveTable(data_15, "parsed_15.csv");
-    
+
     data_00 = loadTable("all_alpha_00.csv", "header");
     parseTable(data_00);
     saveTable(data_00, "parsed_00.csv");
@@ -416,10 +417,12 @@ public class BrandGraph {
   }
   
   public void drawHoriz() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
   }
   
   public void drawVert() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());     
   }
   
@@ -436,6 +439,7 @@ public class BrandGraph {
     for (int i = 0; i < brandsMPG.size(); i++) {
       float horiz_dist = vp.getW() / brandsMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
+      stroke(0);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
       if (brands[i].equals(controller.brand)) {
@@ -460,6 +464,7 @@ public class BrandGraph {
   }
   
   public void vertDetails() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
     float iter = 0;
@@ -467,6 +472,7 @@ public class BrandGraph {
     DecimalFormat df = new DecimalFormat("##.0");    
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
+      stroke(0);
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);
@@ -630,6 +636,7 @@ public class ClassGraph {
   }
   
   public void drawHoriz() {
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());
     float horiz_dist = vp.getW() / classMPG.size();
     for (int i = 0; i < classMPG.size(); i++) {
@@ -656,6 +663,7 @@ public class ClassGraph {
   
   public void drawVert() {
     //vertical axis
+    stroke(0);
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
     float iter = 0;
@@ -663,6 +671,7 @@ public class ClassGraph {
     DecimalFormat df = new DecimalFormat("##.0");
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
+      stroke(0);
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);
@@ -769,9 +778,10 @@ class Controller {
 
     public void initViews(){
       pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
+      pclabels15 = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
-        pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
+        pc15 = new ParallelCoord(pc_vp, pclabels15, data_15);
         pc15.setController(this);
         class_bg = new ClassGraph(class_vp, data_00);
         class_bg.setController(this);

@@ -6,6 +6,7 @@ boolean year_toggle;
 float toggle_x, toggle_y, toggle_w, toggle_h;
 
 String pclabels[];
+String pclabels15[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1, 0.03, 0.80, 0.40);
 Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.30, 0.40);
@@ -79,7 +80,7 @@ void parseData(boolean notloaded) {
     data_15 = loadTable("all_alpha_15.csv", "header");
     parseTable(data_15);
     saveTable(data_15, "parsed_15.csv");
-    
+
     data_00 = loadTable("all_alpha_00.csv", "header");
     parseTable(data_00);
     saveTable(data_00, "parsed_00.csv");

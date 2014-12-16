@@ -29,9 +29,10 @@ class Controller {
 
     public void initViews(){
       pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
+      pclabels15 = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
-        pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
+        pc15 = new ParallelCoord(pc_vp, pclabels15, data_15);
         pc15.setController(this);
         class_bg = new ClassGraph(class_vp, data_00);
         class_bg.setController(this);
