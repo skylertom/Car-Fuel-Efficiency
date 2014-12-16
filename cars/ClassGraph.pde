@@ -57,7 +57,7 @@ public class ClassGraph {
   }
   
   void drawGraph() {
-    hover();
+//    hover();
     drawHoriz();
     drawVert();
     drawLabel();
@@ -103,7 +103,7 @@ public class ClassGraph {
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();
-      if (i == intersect) {
+      if (vehClasses[i].equals(controller.carSize)) {
         fill(255,0,0); 
       } else {
         fill(0,0,0);
@@ -143,7 +143,13 @@ public class ClassGraph {
   
   void drawLabel() {
     DecimalFormat df = new DecimalFormat("##.00");
-    if (intersect != -1) {
+    if (controller.carSize != null) {
+      for (int i = 0; i < vehClasses.length; i++) {
+        if (controller.carSize.equals(vehClasses[i])) {
+          intersect = i;
+          break;
+        } 
+      }
       float horiz_dist = vp.getW() / classMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
       float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      

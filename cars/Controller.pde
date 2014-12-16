@@ -39,6 +39,7 @@ class Controller {
         brand_bg.setController(this);
         brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
         brand_bg15.setController(this);
+        findMax();
     }
     private void findMax() {
       if (class_bg.max > class_bg15.max) {
@@ -117,6 +118,11 @@ class Controller {
             else if (msg.condsOR != null) {
                 checkORS(msg, datum, i);
             }
+        }
+        if (msg.action.equals("new graph")) {
+          carSize = msg.conds[0].value;
+        } else {
+          carSize = null; 
         }
     }
 

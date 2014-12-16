@@ -36,7 +36,6 @@ public class BrandGraph {
   
   void setMode(String m) {
     mode = m;
-    println(mode);
   }
 
   void drawGraph() {
@@ -72,6 +71,27 @@ public class BrandGraph {
       }
     }
   }  
+  
+  void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;    
+    for (int i = 0; i < brandsMPG.size(); i++) {
+      float horiz_dist = vp.getW() / brandsMPG.size();      
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
+      if (horiz_dist/2 > 20) {
+        horiz_dist = 50; 
+      }      
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          msg.action = "brands";
+          msg.addCondition(new Condition("Brand","=",brands[i]));
+          controller.receiveMsg(msg);
+          return;
+        }
+      }
+    }     
+  }
   
   void drawHoriz() {
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
