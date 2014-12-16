@@ -71,14 +71,18 @@ class Controller {
     public void mousePressed() {
         resetMarks();
     }
+
+    public void mouseDragged() {
+        pc.mouseDragged();
+    }
     public void mouseReleased() {
         if (!year_toggle) {
-            pc.mouseClick();
+            pc.mouseReleased();
             class_bg.mouseClick();
 //            brand_bg.mouseClick();
         }
         else {
-            pc15.mouseClick();
+            pc15.mouseReleased();
             class_bg15.mouseClick();
 //            brand_bg15.mouseClick();
         }

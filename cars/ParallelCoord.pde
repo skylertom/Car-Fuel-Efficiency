@@ -7,6 +7,7 @@ class ParallelCoord {
 	String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
+  int currentaxis;
   PVector cornerA = new PVector(0,0);
   ArrayList<Boolean> marked;
   String labels[];
@@ -21,6 +22,7 @@ class ParallelCoord {
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
     this.labels = labels;
+    this.currentaxis = -1;
     this.vp = vp;
     updateMinMax();
     axes = new HashMap<String,Axis>();
@@ -46,19 +48,42 @@ class ParallelCoord {
   }
 
   void mousePressed() {
-    clearSelectedArea();
     dragging = false;
     cornerA.x = mouseX;
     cornerA.y = mouseY;
   }
 
   void mouseDragged() {
+    if (dragging) {
+      axes.get(labels[currentaxis]).moveAxis((float)mouseX/width);
+      return;
+    }
+    for (int m = 0; m <axes.size(); m++){
+      if (axes.get(labels[m]).moveAxis((float)mouseX/width)) {
+        currentaxis = m;
+      }
+    }
     dragging = true;
-    setSelectedArea(cornerA.x, cornerA.y, mouseX, mouseY);
+  }
+
+  void completeMove() {
+    for (int i = 0; i < labels.length; i++) {
+      if (i != currentaxis && axes.get(labels[i]).isinWidth()) {
+        axes.get(labels[i]).swap(axes.get(labels[currentaxis]));
+        String temp = labels[i];
+        labels[i] = labels[currentaxis];
+        labels[currentaxis] = temp;
+        return;
+      }
+    }
+    axes.get(labels[currentaxis]).resetAxis();
   }
 
   void mouseReleased() {
     if (!dragging) switchAxis();
+    if (dragging) completeMove();
+    mouseClick();
+    dragging = false;
   }
 
   void updateMinMax() {
@@ -81,12 +106,10 @@ class ParallelCoord {
 
   void draw() {
     textAlign(LEFT);
-    drawData();
-    Iterator<String> iter = axes.keySet().iterator();
-    while(iter.hasNext()) {
-      String key = iter.next();
-      axes.get(key).draw();
+    for (int i = 0; i < labels.length; i++) {
+      axes.get(labels[i]).draw();
     }
+    drawData();
     drawSelectedArea();
   }
 
@@ -104,9 +127,6 @@ class ParallelCoord {
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
-      for (int m = 0; m <axes.size(); m++){
-        axes.get(labels[m]).moveAxis((float)mouseX/width);
-      }
     }
   }
 
@@ -143,6 +163,8 @@ class ParallelCoord {
     }
     popStyle();
   }
+
+
 
   void mouseClick() {
     Message msg = new Message();

@@ -2,6 +2,13 @@
 
 public class Viewport {
 	private float x, y, w, h;
+
+	Viewport(Viewport v) {
+		this.x = v.getrelX();
+		this.y = v.getrelY();
+		this.w = v.getrelW();
+		this.h = v.getrelH();
+	}
 	Viewport() {
 		x = 0;
 		y = 0;

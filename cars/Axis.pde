@@ -11,6 +11,7 @@ class Axis {
 	float intervalValue;
 	int numTicks;
 	Viewport vp;
+	Viewport tempvp;
 	float intervalH;
 	String label;
 	float margin = (float).90;
@@ -61,6 +62,7 @@ class Axis {
 		intervalH = vp.getH()*margin/numTicks;
 		intervalValue = (maxValue - minValue) / numTicks;
 		this.numTicks = numTicks;
+		tempvp = null;
 	}
 
 	void switchAxis() {
@@ -129,12 +131,30 @@ class Axis {
 		return (getY()<mouseY&&getX()<mouseX&&(getX()+getW())>mouseX&&(getY()+getH())>mouseY);
 	}
 
-	void moveAxis(float x){
-		if (mousePressed){
-			if (labelCoord != null && labelCoord.isIntersecting()){
-  		    vp.setX(x);
+	boolean isinWidth() {
+		return (getX()<=mouseX && getX()+getW()>=mouseX) || labelCoord.isIntersecting();
+	}
+
+	boolean moveAxis(float x){
+		if (labelCoord != null && labelCoord.isIntersecting()){
+			if (tempvp == null) tempvp = new Viewport(this.vp);
+			vp.setX(x);
+			return true;
+		}
+		return false;
+  	}
+
+  	void swap(Axis a) {
+  		a.vp = this.vp;
+  		this.vp = a.tempvp;
+  		a.tempvp = null;
+  	}
+
+  	void resetAxis() {
+  		if (tempvp != null) {
+  			vp = tempvp;
+  			tempvp = null;
   		}
   	}
-  }
-}
+};
 

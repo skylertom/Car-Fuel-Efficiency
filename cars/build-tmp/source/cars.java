@@ -97,7 +97,7 @@ public void switchYear() {
 }
 
 public void mouseDragged() {
-  //pc.mouseDragged();
+  contr.mouseDragged();
 }
 
 public void mouseReleased() {
@@ -174,6 +174,7 @@ class Axis {
 	float intervalValue;
 	int numTicks;
 	Viewport vp;
+	Viewport tempvp;
 	float intervalH;
 	String label;
 	float margin = (float).90f;
@@ -224,6 +225,7 @@ class Axis {
 		intervalH = vp.getH()*margin/numTicks;
 		intervalValue = (maxValue - minValue) / numTicks;
 		this.numTicks = numTicks;
+		tempvp = null;
 	}
 
 	public void switchAxis() {
@@ -292,14 +294,32 @@ class Axis {
 		return (getY()<mouseY&&getX()<mouseX&&(getX()+getW())>mouseX&&(getY()+getH())>mouseY);
 	}
 
-	public void moveAxis(float x){
-		if (mousePressed){
-			if (labelCoord != null && labelCoord.isIntersecting()){
-  		    vp.setX(x);
+	public boolean isinWidth() {
+		return (getX()<=mouseX && getX()+getW()>=mouseX) || labelCoord.isIntersecting();
+	}
+
+	public boolean moveAxis(float x){
+		if (labelCoord != null && labelCoord.isIntersecting()){
+			if (tempvp == null) tempvp = new Viewport(this.vp);
+			vp.setX(x);
+			return true;
+		}
+		return false;
+  	}
+
+  	public void swap(Axis a) {
+  		a.vp = this.vp;
+  		this.vp = a.tempvp;
+  		a.tempvp = null;
+  	}
+
+  	public void resetAxis() {
+  		if (tempvp != null) {
+  			vp = tempvp;
+  			tempvp = null;
   		}
   	}
-  }
-}
+};
 
 
 
@@ -784,22 +804,27 @@ class Controller {
     public void mousePressed() {
         resetMarks();
     }
+
+    public void mouseDragged() {
+        pc.mouseDragged();
+    }
     public void mouseReleased() {
         if (!year_toggle) {
-            pc.mouseClick();
+            pc.mouseReleased();
             class_bg.mouseClick();
+//            brand_bg.mouseClick();
         }
         else {
-            pc15.mouseClick();
+            pc15.mouseReleased();
             class_bg15.mouseClick();
+//            brand_bg15.mouseClick();
         }
     }
     
     public void resetMarks() {
         if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
         else pcmarks = new boolean[data_15.getRowCount()];
-        if (!year_toggle) println("2000");
-        else println("2015");
+        carSize = null;
         setMarksOfViews();
     }
 
@@ -937,6 +962,7 @@ class ParallelCoord {
 	String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
+  int currentaxis;
   PVector cornerA = new PVector(0,0);
   ArrayList<Boolean> marked;
   String labels[];
@@ -951,6 +977,7 @@ class ParallelCoord {
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
     this.labels = labels;
+    this.currentaxis = -1;
     this.vp = vp;
     updateMinMax();
     axes = new HashMap<String,Axis>();
@@ -976,19 +1003,42 @@ class ParallelCoord {
   }
 
   public void mousePressed() {
-    clearSelectedArea();
     dragging = false;
     cornerA.x = mouseX;
     cornerA.y = mouseY;
   }
 
   public void mouseDragged() {
+    if (dragging) {
+      axes.get(labels[currentaxis]).moveAxis((float)mouseX/width);
+      return;
+    }
+    for (int m = 0; m <axes.size(); m++){
+      if (axes.get(labels[m]).moveAxis((float)mouseX/width)) {
+        currentaxis = m;
+      }
+    }
     dragging = true;
-    setSelectedArea(cornerA.x, cornerA.y, mouseX, mouseY);
+  }
+
+  public void completeMove() {
+    for (int i = 0; i < labels.length; i++) {
+      if (i != currentaxis && axes.get(labels[i]).isinWidth()) {
+        axes.get(labels[i]).swap(axes.get(labels[currentaxis]));
+        String temp = labels[i];
+        labels[i] = labels[currentaxis];
+        labels[currentaxis] = temp;
+        return;
+      }
+    }
+    axes.get(labels[currentaxis]).resetAxis();
   }
 
   public void mouseReleased() {
     if (!dragging) switchAxis();
+    if (dragging) completeMove();
+    mouseClick();
+    dragging = false;
   }
 
   public void updateMinMax() {
@@ -1011,12 +1061,10 @@ class ParallelCoord {
 
   public void draw() {
     textAlign(LEFT);
-    drawData();
-    Iterator<String> iter = axes.keySet().iterator();
-    while(iter.hasNext()) {
-      String key = iter.next();
-      axes.get(key).draw();
+    for (int i = 0; i < labels.length; i++) {
+      axes.get(labels[i]).draw();
     }
+    drawData();
     drawSelectedArea();
   }
 
@@ -1034,9 +1082,6 @@ class ParallelCoord {
         line(ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2));
       }
 
-      for (int m = 0; m <axes.size(); m++){
-        axes.get(labels[m]).moveAxis((float)mouseX/width);
-      }
     }
   }
 
@@ -1073,6 +1118,8 @@ class ParallelCoord {
     }
     popStyle();
   }
+
+
 
   public void mouseClick() {
     Message msg = new Message();
@@ -1173,6 +1220,13 @@ class Range {
 
 public class Viewport {
 	private float x, y, w, h;
+
+	Viewport(Viewport v) {
+		this.x = v.getrelX();
+		this.y = v.getrelY();
+		this.w = v.getrelW();
+		this.h = v.getrelH();
+	}
 	Viewport() {
 		x = 0;
 		y = 0;

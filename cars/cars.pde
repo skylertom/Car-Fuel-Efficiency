@@ -67,7 +67,7 @@ void switchYear() {
 }
 
 void mouseDragged() {
-  //pc.mouseDragged();
+  contr.mouseDragged();
 }
 
 void mouseReleased() {
