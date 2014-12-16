@@ -1,3 +1,5 @@
+import java.text.DecimalFormat;
+
 public class BrandGraph {
   Viewport vp;
   Table data;
@@ -7,6 +9,7 @@ public class BrandGraph {
   String mode;
   Float min, max;
   int vert_ticks = 7;
+  int intersect;
  
   BrandGraph(Viewport vp, Table d, String[] vehClasses) {
     this.vp = vp;
@@ -21,6 +24,7 @@ public class BrandGraph {
       classBrands.put(vehClasses[i], new HashMap<String, Float>()); 
     }
     filterData();
+    getMinMax();
   }
   
   void setMode(String m) {
@@ -30,13 +34,36 @@ public class BrandGraph {
   void drawGraph() {
     drawHoriz();
     drawVert();
+    vertDetails();
     if (mode != null) {
       brandsMPG = classBrands.get(mode);
       brands = brandsMPG.keySet().toArray(new String[0]);
-      getMinMax();
+      hover();
       drawDetails();
+      drawLabel();
+    } else {
+      textSize(20);
+      text("Click on a bar on the left", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
+      textSize(12);       
     }
   }
+  
+  void hover() {
+    intersect = -1;
+    for (int i = 0; i < brandsMPG.size(); i++) {
+      float horiz_dist = vp.getW() / brandsMPG.size();      
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
+      if (horiz_dist/2 > 20) {
+        horiz_dist = 50; 
+      }      
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          intersect = i; 
+        }
+      }
+    }
+  }  
   
   void drawHoriz() {
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
@@ -47,14 +74,25 @@ public class BrandGraph {
   }
   
   void drawDetails() {
-    text(mode, vp.getX() + (vp.getW() / 2), vp.getY());
-    //horizontal axis details and bars
+    textSize(20);
+    String toPrint = mode.substring(0, 1).toUpperCase() + mode.substring(1);
+    text(toPrint + "s", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
+    textSize(12);
+    horizDetails();
+//    vertDetails();
+  }
+  
+  void horizDetails() {
     for (int i = 0; i < brandsMPG.size(); i++) {
       float horiz_dist = vp.getW() / brandsMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
-      fill(0,0,0);
+      if (i == intersect) {
+        fill(255,0,0); 
+      } else {
+        fill(0,0,0);
+      }
       if (horiz_dist/2 > 20) {
         horiz_dist = 50; 
       }
@@ -65,37 +103,42 @@ public class BrandGraph {
       textAlign(LEFT);
       text(brands[i], -7, 6);
       popMatrix();
-    }
-    //vertical axis details
+    }     
+  }
+  
+  void vertDetails() {
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
-    int iter = 0;
-    int max_label = ceil(max);
+    float iter = 0;
+    float max_label = ceil(max);
+    DecimalFormat df = new DecimalFormat("##.0");    
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);
-      text(iter, vp.getX() - 15, v_ticks);
+      text(df.format(iter), vp.getX() - 20, v_ticks);
     } 
     pushMatrix();
-    translate(vp.getX() - (vp.getX() * .07), vp.getY() + (vp.getH() / 2));
+    translate(vp.getX() - (vp.getX() * .11), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
     text("Average MPG", 0, 0);
-    popMatrix();    
+    popMatrix();     
   }
   
   void getMinMax() {
-    for (Float f : brandsMPG.values()) {
-      if (min == 0.0) {
-        min = f; 
-      } else if (min > f) {
-        min = f; 
+    for (HashMap<String, Float> brandsMPG : classBrands.values()) {
+      for (Float f : brandsMPG.values()) {
+        if (min == 0.0) {
+          min = f;
+        } else if (min > f) {
+          min = f; 
+        }
+        if (max < f) {
+          max = f; 
+        }
       }
-      if (f > max) {
-        max = f;
-      }
-    }       
+    }  
   }
   
   void filterData() {
@@ -115,9 +158,19 @@ public class BrandGraph {
       }
     }
 //    brands = brandMPG.keySet().toArray(new String[0]);
-   println(classBrands);
    }
   
-  
+  void drawLabel() {
+    DecimalFormat df = new DecimalFormat("##.0");
+    if (intersect != -1) {
+      float horiz_dist = vp.getW() / brandsMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
+      float bar_height = (brandsMPG.get(brands[intersect]) / max) * vp.getH();      
+      fill(0,0,0);
+      textAlign(CENTER);
+      text(df.format(brandsMPG.get(brands[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
+      textAlign(LEFT);
+    }      
+  }
   
 }

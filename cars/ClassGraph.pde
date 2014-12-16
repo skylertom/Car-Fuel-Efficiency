@@ -1,3 +1,5 @@
+import java.text.DecimalFormat;
+
 public class ClassGraph {
   Viewport vp;
   Table data;
@@ -7,6 +9,7 @@ public class ClassGraph {
   int vert_ticks = 7;
   int extend = 10;
   int intersect;
+  DecimalFormat df;
   
   ClassGraph(Viewport vp, Table d) {
      this.vp = vp;
@@ -31,7 +34,6 @@ public class ClassGraph {
        }
     }
     vehClasses = classMPG.keySet().toArray(new String[0]);
-    println(classMPG);
   }
   
   void getMinMax() {
@@ -97,26 +99,31 @@ public class ClassGraph {
     //vertical axis
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
-    int iter = 0;
-    int max_label = ceil(max);
+    float iter = 0;
+    float max_label = ceil(max);
+    DecimalFormat df = new DecimalFormat("##.0");
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
       iter = (max_label / vert_ticks) * (vert_ticks - i);
       textAlign(CENTER, CENTER);
-      text(iter, vp.getX() - 15, v_ticks);
+      text(df.format(iter), vp.getX() - 20, v_ticks);
     } 
     pushMatrix();
-    translate(vp.getX() - (vp.getX() * .5), vp.getY() + (vp.getH() / 2));
+    translate(vp.getX() - (vp.getX() * .7), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
     text("Average MPG", 0, 0);
     popMatrix();
   }
   
   void drawLabel() {
+    DecimalFormat df = new DecimalFormat("##.00");
     if (intersect != -1) {
+      float horiz_dist = vp.getW() / classMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
+      float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      
       fill(0,0,0);
-      text(str(classMPG.get(vehClasses[intersect])), mouseX, mouseY-20);
+      text(df.format(classMPG.get(vehClasses[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);      
     } 
   }
 }

@@ -75,6 +75,7 @@ class ParallelCoord {
   }
 
   void draw() {
+    textAlign(LEFT);
     drawData();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
