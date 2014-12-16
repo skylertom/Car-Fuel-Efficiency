@@ -10,20 +10,21 @@ Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.40, 0.40);
 Viewport brand_vp = new Viewport(root_vp, 0.55, 0.50, 0.40, 0.40);
 
 //views:
-ParallelCoord pc;
 ClassGraph class_bg;
 BrandGraph brand_bg;
+
+Controller contr;
 
 void setup() {
   size(900,600);
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(false); 
+  parseData(true); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  pc = new ParallelCoord(pc_vp, pclabels, data_00);
   class_bg = new ClassGraph(class_vp, data_00);
   brand_bg = new BrandGraph(brand_vp, data_00);
+  contr = new Controller();
 }
 
 void draw() {
@@ -39,14 +40,21 @@ void mousePressed() {
     String vehClass = class_bg.vehClasses[class_bg.intersect];
 //    brand_bg.drawGraph();
   }
+
+  contr.drawViews();
+  class_bg.drawAxes();
+}
+
+void mousePressed() {
+  contr.mousePressed();
 }
 
 void mouseDragged() {
-  pc.mouseDragged();
+  //pc.mouseDragged();
 }
 
 void mouseReleased() {
-  pc.mouseReleased();
+  contr.mouseReleased();
 }
 
 void parseData(boolean notloaded) {

@@ -4,31 +4,26 @@ import java.util.Iterator;
 import java.util.Arrays;
 
 class ParallelCoord {
-	
+	String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
   PVector cornerA = new PVector(0,0);
   ArrayList<Boolean> marked;
-  boolean marks[];
-  ArrayList<Integer> markedIndexes;
   String labels[];
   HashMap<String,Range> dimensions; 
   HashMap<String,Float> min, max;
   HashMap<String,Axis> axes;
   Viewport vp;
   Rectangle selectArea = null;
-  ArrayList<float[]> mylines;
+  Controller controller;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
-    marks = new boolean[_data.getRowCount()];
-    Arrays.fill(marks, false);
     this.labels = labels;
     this.vp = vp;
     updateMinMax();
     axes = new HashMap<String,Axis>();
     dimensions = new HashMap<String,Range>();
-    markedIndexes = new ArrayList<Integer>();
     Viewport ax_vp;
     for (int i = 0; i < labels.length; i++) {
       ax_vp = new Viewport(vp, ((float)i) / (labels.length - 1),
@@ -38,9 +33,11 @@ class ParallelCoord {
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
-    mylines = new ArrayList<float[]>();
-    hover();
     drawData();
+  }
+
+  void setController(Controller x) {
+    this.controller = x;
   }
 
   void mousePressed() {
@@ -78,10 +75,7 @@ class ParallelCoord {
   }
 
   void draw() {
-    hover();
     drawData();
-    //small();
-    //drawlines();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
       String key = iter.next();
@@ -90,30 +84,11 @@ class ParallelCoord {
     drawSelectedArea();
   }
 
-  void small() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      if (intersect(mouseX, mouseY, x)) {
-        x[4] = 1;
-      }
-      x[4] = 0;
-    }
-  }
-
-  void drawlines() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      stroke(0, 120);
-      if (x[4] == 1) stroke(255, 0, 0);
-      line(x[0], x[1], x[2], x[3]);
-    }
-  }
-
   void drawData() {
     for (int i = 0; i < _data.getRowCount(); i++) {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
-      if (marks[i]) stroke(255, 0, 0);
+      if (pcmarks!=null && pcmarks[i]) stroke(255, 0, 0);
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);
@@ -163,8 +138,9 @@ class ParallelCoord {
     popStyle();
   }
 
-  void hover() {
-    Arrays.fill(marks, false);
+  void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;
     TableRow datum;
     Axis ax1,ax2; // tmp loop axes
     float y1,y2; // tmp loop floats
@@ -178,17 +154,18 @@ class ParallelCoord {
         float tempLine[] = {ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2)};
         if (selectArea != null) {
           if (intersect(selectArea, tempLine)) {
-            marks[i] = true;
+            msg.addcondOR(new Condition("Model","=",datum.getString("Model")));
             break;
           }
         }
         else if (intersect(mouseX, mouseY, tempLine)) {
-          marks[i] = true;
-          markedIndexes.add(i);
+          msg.addcondOR(new Condition("Model","=",datum.getString("Model")));
           break;
         }
       }
     }
+    if (msg.condsOR == null) msg.action = "clean";
+    controller.receiveMsg(msg);
   }
 
   boolean intersect(Rectangle r, float myline[]) {

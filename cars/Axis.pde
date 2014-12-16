@@ -38,11 +38,7 @@ class Axis {
 		}
 
 		void drawTextLabel(){
-			if (isIntersecting()){
-				fill(255, 0, 0    );
-			} else {
-				fill(0, 0, 0);
-			}
+			fill(0, 0, 0);
 			text(label, p1.x, p2.y);
 		}
 

@@ -3,6 +3,13 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import java.util.Iterator; 
+import java.lang.Iterable; 
+import java.awt.Rectangle; 
+import java.util.ArrayList; 
+import java.util.HashMap; 
+import java.util.Map; 
+import java.util.ArrayList; 
 import java.util.ArrayList; 
 import java.util.HashMap; 
 import java.util.Iterator; 
@@ -28,36 +35,42 @@ String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.05f, 0.80f, 0.40f);
-
+Viewport class_vp = new Viewport(root_vp, 0.05f, 0.50f, 0.4f, 0.40f);
+Viewport brand_vp = new Viewport(root_vp, 0.55f, 0.50f, 0.40f, 0.40f);
 
 //views:
-ParallelCoord pc;
+ClassGraph class_bg;
+BrandGraph brand_bg;
+
+Controller contr;
 
 public void setup() {
   size(900,600);
   smooth();
   background(255);
   frame.setResizable(true);
-  parseData(false); 
+  parseData(true); 
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  pc = new ParallelCoord(pc_vp, pclabels, data_00);
+  class_bg = new ClassGraph(class_vp, data_00);
+  contr = new Controller();
 }
 
 public void draw() {
   background(255);
-  pc.draw();
+  contr.drawViews();
+  class_bg.drawAxes();
 }
 
 public void mousePressed() {
-  pc.mousePressed();
+  contr.mousePressed();
 }
 
 public void mouseDragged() {
-  pc.mouseDragged();
+  //pc.mouseDragged();
 }
 
 public void mouseReleased() {
-  pc.mouseReleased();
+  contr.mouseReleased();
 }
 
 public void parseData(boolean notloaded) {
@@ -103,6 +116,10 @@ public void parseTable(Table t) {
       String brand = x.substring(0, x.indexOf(' '));
       if (brand.equals("ASTON")) {
         brand += " MARTIN";
+      } else if (brand.equals("ALFA")) {
+        brand += " ROMEO"; 
+      } else if (brand.equals("LAND")) {
+        brand += " ROVER"; 
       }
       row.setString("Brand", brand);
       lastrow = x;
@@ -149,11 +166,7 @@ class Axis {
 		}
 
 		public void drawTextLabel(){
-			if (isIntersecting()){
-				fill(255, 0, 0    );
-			} else {
-				fill(0, 0, 0);
-			}
+			fill(0, 0, 0);
 			text(label, p1.x, p2.y);
 		}
 
@@ -253,37 +266,320 @@ class Axis {
   }
 }
 
+public class BrandGraph {
+  Viewport vp;
+  Table data;
+ 
+  BrandGraph(Viewport vp, Table d) {
+    this.vp = vp;
+    data = d;
+  } 
+  
+  
+  
+}
+public class ClassGraph {
+  Viewport vp;
+  Table data;
+  HashMap<String, Float> classes;
+  Float min, max;
+  int vert_ticks = 7;
+  int extend = 10;
+  
+  ClassGraph(Viewport vp, Table d) {
+     this.vp = vp;
+     data = d;
+     classes = new HashMap<String, Float>();
+     min = 0.0f;
+     max = 0.0f;
+     filterData();
+  }
+  
+  public void filterData() {
+    for (int i = 0; i < data.getRowCount(); i++) {
+       String vehClass = data.getString(i, "Veh Class");
+       Float avg = classes.get(vehClass);
+       Float rowMPG = data.getFloat(i, "Cmb MPG");
+       if (avg == null) {
+         classes.put(vehClass, rowMPG);
+       } else {
+         float rowVal = data.getFloat(i, "Cmb MPG");
+         avg = (avg + rowMPG) / 2;
+         classes.put(vehClass, avg);
+       }
+    }
+    println(classes);
+  }
+  
+  public void drawAxes() {
+    String[] vehClasses = classes.keySet().toArray(new String[0]);
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW() + extend, vp.getY() + vp.getH());
+    float horiz_dist = vp.getW() / classes.size();
+    for (int i = 0; i < classes.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2) + extend;
+      line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
+      pushMatrix();
+      translate(h_ticks, vp.getY() + vp.getH() + 10);
+      rotate(HALF_PI/4);
+      textAlign(LEFT);
+      text(vehClasses[i], -7, 6);
+      popMatrix();
+    }
+    
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
+    for (Float f : classes.values()) {
+      if (min == 0.0f) {
+        min = f; 
+      } else if (min > f) {
+        min = f; 
+      }
+      if (f > max) {
+        max = f; 
+      }
+    }
+    float vert_dist = vp.getH() / vert_ticks;
+    for (int i = 0; i < vert_ticks; i++) {
+      float v_ticks = (vert_dist * i) + vp.getY();
+      line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
+    }
+//    println(vp.getX(), vp.getY(), vp.getW(), vp.getH());
+  }
+}
+class Condition {
+    String col = null;
+    String operator = null;
+    String value = "-1"; 
+
+    // create a new Condition object that specifies some data column
+    // should have some relationship to some value
+    //   col: column name of data the relationship applies to
+    //   op: operator (e.g. "<=")
+    //   value: value to compare to
+    Condition(String col, String op, String value) {
+        this.col = col;
+        this.operator = op;
+        this.value = value;
+    }
+    
+    public String toString() {
+        return col + " " + operator + " " + value + " ";
+    }
+    
+    public boolean equals(Condition cond){
+        return operator.equals(cond.operator) && 
+        value == cond.value && 
+        col.equals(cond.col);
+    }
+
+};
+
+    public static boolean checkConditions(Condition[] conds, TableRow r) {
+        if(conds == null || r == null){
+            return false;
+        }
+        boolean and = true;
+        for (int i = 0; i < conds.length; i++) {
+            if (!checkCondition(conds[i], r)) return false;
+        }
+        return true;
+    }
+
+    public static boolean checkCondition(Condition cond, TableRow r) {
+        if (cond == null || cond.value == null || r == null) return false;
+        if (cond.operator.equals("=")) { 
+            return r.getString(cond.col).equals(cond.value);
+        }
+        return false;
+    }
+
+
+
+
+
+
+
+boolean pcmarks[] = null;
+TypeGraph typemarks = null;
+class TypeGraph {
+    ArrayList<String>types;
+    ArrayList<Float>percents;
+};
+
+class Controller {
+    protected Message preMsg = null;
+    ParallelCoord pc;
+    //Graph sizeGraph;
+    //Graph brandGraph;
+    String carSize = null; //the car type in the brand graph
+
+    public Controller() {
+        initViews();
+    }
+
+    public void initViews(){
+        pc = new ParallelCoord(pc_vp, pclabels, data_00);
+        pc.setController(this);
+    }
+
+
+    public void drawViews() {
+        pc.draw();
+        //sizeGraph.draw();
+        //brandGraph.draw();
+    }
+
+    public void mousePressed() {
+        //reset
+    }
+    public void mouseReleased() {
+        pc.mouseClick();
+    }
+    
+    public void resetMarks() {
+        pcmarks = new boolean[data_00.getRowCount()];
+        setMarksOfViews();
+    }
+
+
+    public void setMarksOfViews(){
+    }
+
+    //Possible messages to receive:
+        //Type of Car -> pc needs list of all marks, need to make brand graph
+        //Type of Car + Brand -> pc needs list of all marks
+        //List of Models
+    private void makeMarks(Message msg) {
+        pcmarks = new boolean[data_00.getRowCount()];
+        for (int i = 0; i < data_00.getRowCount(); i++) {
+            TableRow datum = data_00.getRow(i);
+            pcmarks[i] = false;
+            if (checkConditions(msg.conds, datum)) {
+                pcmarks[i] = true;
+            }
+            else if (msg.condsOR != null) {
+                checkORS(msg, datum, i);
+            }
+        }
+    }
+
+    private void checkORS(Message msg, TableRow r, int i) {
+        for (int j = 0; j < msg.condsOR.size(); j++) {
+            if (checkCondition(msg.condsOR.get(j), r)) {
+                pcmarks[i] = true;
+            }
+        }
+    }
+
+    public void receiveMsg(Message msg) {
+        if (msg.action.equals("clean")) {
+            resetMarks();
+            return;
+        }
+        if (msg.action.equals("new graph")) {
+            //make brand graph
+        }
+        makeMarks(msg);
+        setMarksOfViews();
+    }
+
+};
+
+
+class Message {
+    String src = null;
+    Condition[] conds = null;
+    ArrayList<Condition> condsOR = null;
+    String action = "normal";
+
+    Message() {}
+    public Message addcondOR(Condition con) {
+        if (condsOR == null) condsOR = new ArrayList<Condition>();
+        condsOR.add(con);
+        return this;
+    }
+
+    public Message setSource(String str) {
+        this.src = str;
+        return this;
+    }
+
+    public Message setAction(String str) {
+        this.action = str;
+        return this;
+    }
+
+    public Message setConditions(Condition[] conds) {
+        this.conds = conds;
+        return this;
+    }
+
+    public boolean equals(Message msg) {
+        if (msg == null) {
+            return false;
+        }
+        if (src == null && msg.src == null) {
+            return true;
+        }
+        if (src == null || msg.src == null) {
+            return false;
+        }
+        if (!src.equals(msg.src)) {
+            return false;
+        }
+        if (conds != null && msg.conds != null) {
+            if (conds.length != msg.conds.length) {
+                return false;
+            }
+            for (int i = 0; i < conds.length; i++) {
+                if (!conds[i].equals(msg.conds[i])) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            if (conds == null && msg.conds == null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public String toString() {
+        String str = "";
+        for (Condition cond: conds) {
+            str += cond.toString();
+        }
+        return str + "\n\n";
+    }
+}
+
 
 
 
 
 
 class ParallelCoord {
-	
+	String name = "ParallelCoordinates";
   Table _data;
   boolean dragging = false; // whether or not the mouse is being dragged
   PVector cornerA = new PVector(0,0);
   ArrayList<Boolean> marked;
-  boolean marks[];
-  ArrayList<Integer> markedIndexes;
   String labels[];
   HashMap<String,Range> dimensions; 
   HashMap<String,Float> min, max;
   HashMap<String,Axis> axes;
   Viewport vp;
   Rectangle selectArea = null;
-  ArrayList<float[]> mylines;
+  Controller controller;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
-    marks = new boolean[_data.getRowCount()];
-    Arrays.fill(marks, false);
     this.labels = labels;
     this.vp = vp;
     updateMinMax();
     axes = new HashMap<String,Axis>();
     dimensions = new HashMap<String,Range>();
-    markedIndexes = new ArrayList<Integer>();
     Viewport ax_vp;
     for (int i = 0; i < labels.length; i++) {
       ax_vp = new Viewport(vp, ((float)i) / (labels.length - 1),
@@ -293,9 +589,11 @@ class ParallelCoord {
       axes.put(labels[i], new Axis(ax_vp, labels[i], min.get(labels[i]), max.get(labels[i]), 5));
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
-    mylines = new ArrayList<float[]>();
-    hover();
     drawData();
+  }
+
+  public void setController(Controller x) {
+    this.controller = x;
   }
 
   public void mousePressed() {
@@ -333,10 +631,7 @@ class ParallelCoord {
   }
 
   public void draw() {
-    hover();
     drawData();
-    //small();
-    //drawlines();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {
       String key = iter.next();
@@ -345,30 +640,11 @@ class ParallelCoord {
     drawSelectedArea();
   }
 
-  public void small() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      if (intersect(mouseX, mouseY, x)) {
-        x[4] = 1;
-      }
-      x[4] = 0;
-    }
-  }
-
-  public void drawlines() {
-    for (int i = 0; i < mylines.size(); i++) {
-      float x[] = mylines.get(i);
-      stroke(0, 120);
-      if (x[4] == 1) stroke(255, 0, 0);
-      line(x[0], x[1], x[2], x[3]);
-    }
-  }
-
   public void drawData() {
     for (int i = 0; i < _data.getRowCount(); i++) {
       TableRow datum = _data.getRow(i);
       stroke(0, 120);
-      if (marks[i]) stroke(255, 0, 0);
+      if (pcmarks!=null && pcmarks[i]) stroke(255, 0, 0);
       for (int j = 0; j < labels.length - 1; j++) {
         Axis ax1 = axes.get(labels[j]);
         Axis ax2 = axes.get(labels[j+1]);
@@ -418,8 +694,9 @@ class ParallelCoord {
     popStyle();
   }
 
-  public void hover() {
-    Arrays.fill(marks, false);
+  public void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;
     TableRow datum;
     Axis ax1,ax2; // tmp loop axes
     float y1,y2; // tmp loop floats
@@ -433,17 +710,18 @@ class ParallelCoord {
         float tempLine[] = {ax1.getX(), ax1.getLoc(y1), ax2.getX(), ax2.getLoc(y2)};
         if (selectArea != null) {
           if (intersect(selectArea, tempLine)) {
-            marks[i] = true;
+            msg.addcondOR(new Condition("Model","=",datum.getString("Model")));
             break;
           }
         }
         else if (intersect(mouseX, mouseY, tempLine)) {
-          marks[i] = true;
-          markedIndexes.add(i);
+          msg.addcondOR(new Condition("Model","=",datum.getString("Model")));
           break;
         }
       }
     }
+    if (msg.condsOR == null) msg.action = "clean";
+    controller.receiveMsg(msg);
   }
 
   public boolean intersect(Rectangle r, float myline[]) {
