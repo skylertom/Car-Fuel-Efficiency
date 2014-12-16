@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-boolean pcmarks[] = null;
 TypeGraph typemarks = null;
 class TypeGraph {
     ArrayList<String>types;
@@ -22,12 +21,14 @@ class Controller {
     BrandGraph brand_bg15;
     String carSize = null; //the car type in the brand graph
     String brand = null;
+    boolean pcmarks[] = null;
 
     public Controller() {
         initViews();
     }
 
     public void initViews(){
+      pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
         pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
@@ -55,18 +56,6 @@ class Controller {
       }  
     }
 
-    void displayBrands() {
-      if (!year_toggle) {
-        if (class_bg.intersect != -1) {
-          brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
-        }
-      } else if (year_toggle) {
-        if (class_bg15.intersect != -1) {
-          brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
-        }
-      }  
-    }
-
     public void drawViews() {
         if (!year_toggle) {
             pc.draw();
@@ -81,7 +70,7 @@ class Controller {
     }
 
     public void mousePressed() {
-        //reset
+        resetMarks();
     }
     public void mouseReleased() {
         if (!year_toggle) {
@@ -110,14 +99,12 @@ class Controller {
 
 
     public void setMarksOfViews(){
+        if (!year_toggle) pc.setMarks(pcmarks);
+        else pc15.setMarks(pcmarks);
     }
 
-    //Possible messages to receive:
-        //Type of Car -> pc needs list of all marks, need to make brand graph
-        //Type of Car + Brand -> pc needs list of all marks
-        //List of Models
     private void makeMarks(Message msg) {
-        pcmarks = new boolean[data_00.getRowCount()];
+        resetMarks();
         for (int i = 0; i < data_00.getRowCount(); i++) {
             TableRow datum = data_00.getRow(i);
             pcmarks[i] = false;
@@ -156,6 +143,7 @@ class Controller {
         if (msg.action.equals("new graph")) {
             if (!year_toggle) brand_bg.setMode(msg.conds[0].value);
             else brand_bg15.setMode(msg.conds[0].value);
+            carSize = msg.conds[0].value;
         }
         if (msg.action.equals("brands")) {
  

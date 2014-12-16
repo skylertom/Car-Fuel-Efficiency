@@ -56,12 +56,6 @@ public void setup() {
   frame.setResizable(true);
   parseData(true); 
   year_toggle = false;  
-  pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  class_bg = new ClassGraph(class_vp, data_00);
-  class_bg15 = new ClassGraph(class_vp, data_15);
-  brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
-  brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
-  findMax();
   contr = new Controller();
 }
 
@@ -69,26 +63,6 @@ public void draw() {
   background(255);
   drawToggle();
   contr.drawViews();
-  if (!year_toggle) {
-    //class_bg.drawGraph();
-    //brand_bg.drawGraph(); 
-  } else {
-    //class_bg15.drawGraph();
-    //brand_bg15.drawGraph(); 
-  }
-}
-
-public void findMax() {
-  if (class_bg.max > class_bg15.max) {
-    class_bg15.max = class_bg.max; 
-  } else {
-    class_bg.max = class_bg15.max; 
-  }
-  if (brand_bg.max > brand_bg15.max) {
-    brand_bg15.max = brand_bg.max; 
-  } else {
-    brand_bg.max = brand_bg15.max; 
-  }  
 }
 
 public void drawToggle() {
@@ -111,53 +85,14 @@ public void drawToggle() {
   textAlign(LEFT);
 
 }
-/*
-void mousePressed() {
-  pc.mousePressed();
-  if (class_bg.intersect != -1) {
-    String vehClass = class_bg.vehClasses[class_bg.intersect];
-//    brand_bg.drawGraph();
-  }
-
-  contr.drawViews();
-  class_bg.drawAxes();
-}
-*/
 public void mousePressed() {
-  contr.mousePressed();
-  displayBrands();
   switchYear();
-}
-
-public void displayBrands() {
-  if (!year_toggle) {
-    if (class_bg.intersect != -1) {
-      brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
-    }
-  } else if (year_toggle) {
-    if (class_bg15.intersect != -1) {
-      brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
-    }
-  }  
+  contr.mousePressed();
 }
 
 public void switchYear() {
   if (mouseX >= toggle_x && mouseX <= toggle_x + toggle_w && mouseY >= toggle_y && mouseY <= toggle_y + toggle_h) {
     year_toggle = !year_toggle;
-    if (year_toggle) {
-      if (brand_bg.mode != null && !brand_bg.mode.equals("SUV")) {
-        brand_bg15.setMode(brand_bg.mode); 
-      } else {
-        brand_bg15.setMode(null); 
-      }
-    } else {
-      if (brand_bg15.mode != null && !brand_bg15.mode.equals("standard SUV") && !brand_bg15.mode.equals("small SUV")) {
-        brand_bg.setMode(brand_bg15.mode); 
-      } else {
-        brand_bg.setMode(null); 
-      }
-    }
-    contr.resetMarks();
   }  
 }
 
@@ -404,7 +339,6 @@ public class BrandGraph {
   
   public void setMode(String m) {
     mode = m;
-    println(mode);
   }
 
   public void drawGraph() {
@@ -440,6 +374,27 @@ public class BrandGraph {
       }
     }
   }  
+  
+  public void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;    
+    for (int i = 0; i < brandsMPG.size(); i++) {
+      float horiz_dist = vp.getW() / brandsMPG.size();      
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
+      if (horiz_dist/2 > 20) {
+        horiz_dist = 50; 
+      }      
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          msg.action = "brands";
+          msg.addCondition(new Condition("Brand","=",brands[i]));
+          controller.receiveMsg(msg);
+          return;
+        }
+      }
+    }     
+  }
   
   public void drawHoriz() {
     line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
@@ -609,7 +564,7 @@ public class ClassGraph {
   }
   
   public void drawGraph() {
-    hover();
+//    hover();
     drawHoriz();
     drawVert();
     drawLabel();
@@ -655,7 +610,7 @@ public class ClassGraph {
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();
-      if (i == intersect) {
+      if (vehClasses[i].equals(controller.carSize)) {
         fill(255,0,0); 
       } else {
         fill(0,0,0);
@@ -695,7 +650,13 @@ public class ClassGraph {
   
   public void drawLabel() {
     DecimalFormat df = new DecimalFormat("##.00");
-    if (intersect != -1) {
+    if (controller.carSize != null) {
+      for (int i = 0; i < vehClasses.length; i++) {
+        if (controller.carSize.equals(vehClasses[i])) {
+          intersect = i;
+          break;
+        } 
+      }
       float horiz_dist = vp.getW() / classMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
       float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      
@@ -757,7 +718,6 @@ class Condition {
 
 
 
-boolean pcmarks[] = null;
 TypeGraph typemarks = null;
 class TypeGraph {
     ArrayList<String>types;
@@ -773,12 +733,14 @@ class Controller {
     BrandGraph brand_bg;
     BrandGraph brand_bg15;
     String carSize = null; //the car type in the brand graph
+    boolean pcmarks[] = null;
 
     public Controller() {
         initViews();
     }
 
     public void initViews(){
+      pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
         pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
@@ -791,6 +753,7 @@ class Controller {
         brand_bg.setController(this);
         brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
         brand_bg15.setController(this);
+        findMax();
     }
     private void findMax() {
       if (class_bg.max > class_bg15.max) {
@@ -802,18 +765,6 @@ class Controller {
         brand_bg15.max = brand_bg.max; 
       } else {
         brand_bg.max = brand_bg15.max; 
-      }  
-    }
-
-    public void displayBrands() {
-      if (!year_toggle) {
-        if (class_bg.intersect != -1) {
-          brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
-        }
-      } else if (year_toggle) {
-        if (class_bg15.intersect != -1) {
-          brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
-        }
       }  
     }
 
@@ -831,7 +782,7 @@ class Controller {
     }
 
     public void mousePressed() {
-        //reset
+        resetMarks();
     }
     public void mouseReleased() {
         if (!year_toggle) {
@@ -847,19 +798,19 @@ class Controller {
     public void resetMarks() {
         if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
         else pcmarks = new boolean[data_15.getRowCount()];
+        if (!year_toggle) println("2000");
+        else println("2015");
         setMarksOfViews();
     }
 
 
     public void setMarksOfViews(){
+        if (!year_toggle) pc.setMarks(pcmarks);
+        else pc15.setMarks(pcmarks);
     }
 
-    //Possible messages to receive:
-        //Type of Car -> pc needs list of all marks, need to make brand graph
-        //Type of Car + Brand -> pc needs list of all marks
-        //List of Models
     private void makeMarks(Message msg) {
-        pcmarks = new boolean[data_00.getRowCount()];
+        resetMarks();
         for (int i = 0; i < data_00.getRowCount(); i++) {
             TableRow datum = data_00.getRow(i);
             pcmarks[i] = false;
@@ -869,6 +820,11 @@ class Controller {
             else if (msg.condsOR != null) {
                 checkORS(msg, datum, i);
             }
+        }
+        if (msg.action.equals("new graph")) {
+          carSize = msg.conds[0].value;
+        } else {
+          carSize = null; 
         }
     }
 
@@ -888,6 +844,7 @@ class Controller {
         if (msg.action.equals("new graph")) {
             if (!year_toggle) brand_bg.setMode(msg.conds[0].value);
             else brand_bg15.setMode(msg.conds[0].value);
+            carSize = msg.conds[0].value;
         }
         makeMarks(msg);
         setMarksOfViews();
@@ -989,6 +946,7 @@ class ParallelCoord {
   Viewport vp;
   Rectangle selectArea = null;
   Controller controller;
+  boolean pcmarks[] = null;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
@@ -1007,6 +965,10 @@ class ParallelCoord {
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
     drawData();
+  }
+
+  public void setMarks(boolean m[]) {
+    this.pcmarks = m;
   }
 
   public void setController(Controller x) {

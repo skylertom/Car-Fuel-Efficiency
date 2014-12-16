@@ -16,6 +16,7 @@ class ParallelCoord {
   Viewport vp;
   Rectangle selectArea = null;
   Controller controller;
+  boolean pcmarks[] = null;
 
   ParallelCoord(Viewport vp, String[] labels, Table _data) {
     this._data = _data;
@@ -34,6 +35,10 @@ class ParallelCoord {
             dimensions.put(labels[i], new Range( ax_vp.getX(), ax_vp.getY() ,  ax_vp.getW(), ax_vp.getH()));
     }
     drawData();
+  }
+
+  void setMarks(boolean m[]) {
+    this.pcmarks = m;
   }
 
   void setController(Controller x) {

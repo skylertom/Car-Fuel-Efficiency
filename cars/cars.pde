@@ -26,12 +26,6 @@ void setup() {
   frame.setResizable(true);
   parseData(true); 
   year_toggle = false;  
-  pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  class_bg = new ClassGraph(class_vp, data_00);
-  class_bg15 = new ClassGraph(class_vp, data_15);
-  brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
-  brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
-  findMax();
   contr = new Controller();
 }
 
@@ -39,26 +33,6 @@ void draw() {
   background(255);
   drawToggle();
   contr.drawViews();
-  if (!year_toggle) {
-    //class_bg.drawGraph();
-    //brand_bg.drawGraph(); 
-  } else {
-    //class_bg15.drawGraph();
-    //brand_bg15.drawGraph(); 
-  }
-}
-
-void findMax() {
-  if (class_bg.max > class_bg15.max) {
-    class_bg15.max = class_bg.max; 
-  } else {
-    class_bg.max = class_bg15.max; 
-  }
-  if (brand_bg.max > brand_bg15.max) {
-    brand_bg15.max = brand_bg.max; 
-  } else {
-    brand_bg.max = brand_bg15.max; 
-  }  
 }
 
 void drawToggle() {
@@ -81,53 +55,14 @@ void drawToggle() {
   textAlign(LEFT);
 
 }
-/*
 void mousePressed() {
-  pc.mousePressed();
-  if (class_bg.intersect != -1) {
-    String vehClass = class_bg.vehClasses[class_bg.intersect];
-//    brand_bg.drawGraph();
-  }
-
-  contr.drawViews();
-  class_bg.drawAxes();
-}
-*/
-void mousePressed() {
-  contr.mousePressed();
-  displayBrands();
   switchYear();
-}
-
-void displayBrands() {
-  if (!year_toggle) {
-    if (class_bg.intersect != -1) {
-      brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
-    }
-  } else if (year_toggle) {
-    if (class_bg15.intersect != -1) {
-      brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
-    }
-  }  
+  contr.mousePressed();
 }
 
 void switchYear() {
   if (mouseX >= toggle_x && mouseX <= toggle_x + toggle_w && mouseY >= toggle_y && mouseY <= toggle_y + toggle_h) {
     year_toggle = !year_toggle;
-    if (year_toggle) {
-      if (brand_bg.mode != null && !brand_bg.mode.equals("SUV")) {
-        brand_bg15.setMode(brand_bg.mode); 
-      } else {
-        brand_bg15.setMode(null); 
-      }
-    } else {
-      if (brand_bg15.mode != null && !brand_bg15.mode.equals("standard SUV") && !brand_bg15.mode.equals("small SUV")) {
-        brand_bg.setMode(brand_bg15.mode); 
-      } else {
-        brand_bg.setMode(null); 
-      }
-    }
-    contr.resetMarks();
   }  
 }
 
