@@ -3,11 +3,10 @@ Table data_15;
 int numRows_00;
 int numRows_15;
 
-String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.40);
-Viewport class_vp = new Viewport(root_vp, 0.05, 0.50, 0.4, 0.40);
+Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.40, 0.40);
 Viewport brand_vp = new Viewport(root_vp, 0.55, 0.50, 0.40, 0.40);
 
 //views:
@@ -24,16 +23,22 @@ void setup() {
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   pc = new ParallelCoord(pc_vp, pclabels, data_00);
   class_bg = new ClassGraph(class_vp, data_00);
+  brand_bg = new BrandGraph(brand_vp, data_00);
 }
 
 void draw() {
   background(255);
   pc.draw();
-  class_bg.drawAxes();
+  class_bg.drawGraph();
+  brand_bg.drawGraph();
 }
 
 void mousePressed() {
   pc.mousePressed();
+  if (class_bg.intersect != -1) {
+    String vehClass = class_bg.vehClasses[class_bg.intersect];
+//    brand_bg.drawGraph();
+  }
 }
 
 void mouseDragged() {
