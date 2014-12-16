@@ -26,7 +26,6 @@ public class ClassGraph {
        if (avg == null) {
          classMPG.put(vehClass, rowMPG);
        } else {
-         float rowVal = data.getFloat(i, "Cmb MPG");
          avg = (avg + rowMPG) / 2;
          classMPG.put(vehClass, avg);
        }
@@ -83,13 +82,14 @@ public class ClassGraph {
         fill(0,0,0);
       }
       rect(h_ticks - (horiz_dist / 4), vp.getY() + (vp.getH() - bar_height), horiz_dist / 2, bar_height);
-      fill(0,0,0);
+//      fill(0,0,0);
       pushMatrix();
       translate(h_ticks, vp.getY() + vp.getH() + 10);
       rotate(HALF_PI/4);
       textAlign(LEFT);
       text(vehClasses[i], -7, 6);
       popMatrix();
+      fill(0,0,0);
     }
   }
   

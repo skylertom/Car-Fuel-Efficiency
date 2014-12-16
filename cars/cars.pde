@@ -6,8 +6,8 @@ int numRows_15;
 String pclabels[];
 Viewport root_vp = new Viewport();
 Viewport pc_vp = new Viewport(root_vp, 0.1, 0.05, 0.80, 0.40);
-Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.40, 0.40);
-Viewport brand_vp = new Viewport(root_vp, 0.55, 0.50, 0.40, 0.40);
+Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.30, 0.40);
+Viewport brand_vp = new Viewport(root_vp, 0.45, 0.50, 0.51, 0.40);
 
 //views:
 ParallelCoord pc;
@@ -25,7 +25,7 @@ void setup() {
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   pc = new ParallelCoord(pc_vp, pclabels, data_00);
   class_bg = new ClassGraph(class_vp, data_00);
-  brand_bg = new BrandGraph(brand_vp, data_00);
+  brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
   contr = new Controller();
 }
 
@@ -49,6 +49,9 @@ void mousePressed() {
 */
 void mousePressed() {
   contr.mousePressed();
+  if (class_bg.intersect != -1) {
+    brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
+  }
 }
 
 void mouseDragged() {
