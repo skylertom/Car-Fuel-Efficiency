@@ -86,16 +86,19 @@ class Controller {
         if (!year_toggle) {
             pc.mouseClick();
             class_bg.mouseClick();
+//            brand_bg.mouseClick();
         }
         else {
             pc15.mouseClick();
             class_bg15.mouseClick();
+//            brand_bg15.mouseClick();
         }
     }
     
     public void resetMarks() {
         if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
         else pcmarks = new boolean[data_15.getRowCount()];
+        carSize = null;
         setMarksOfViews();
     }
 
