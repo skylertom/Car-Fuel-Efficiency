@@ -10,8 +10,11 @@ public class BrandGraph {
   Float min, max;
   int vert_ticks = 7;
   int intersect;
+  String name;
+  Controller controller;
  
   BrandGraph(Viewport vp, Table d, String[] vehClasses) {
+    this.name = "brandgraph";
     this.vp = vp;
     data = d;
     mode = null;
@@ -26,11 +29,16 @@ public class BrandGraph {
     filterData();
     getMinMax();
   }
+
+  void setController(Controller x) {
+    this.controller = x;
+  }
   
   void setMode(String m) {
     mode = m;
+    println(mode);
   }
-  
+
   void drawGraph() {
     drawHoriz();
     drawVert();

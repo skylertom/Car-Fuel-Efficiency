@@ -12,8 +12,6 @@ Viewport class_vp = new Viewport(root_vp, 0.07, 0.50, 0.30, 0.40);
 Viewport brand_vp = new Viewport(root_vp, 0.45, 0.50, 0.51, 0.40);
 
 //views:
-ParallelCoord pc;
-ParallelCoord pc15;
 ClassGraph class_bg;
 ClassGraph class_bg15;
 BrandGraph brand_bg;
@@ -42,11 +40,11 @@ void draw() {
   drawToggle();
   contr.drawViews();
   if (!year_toggle) {
-    class_bg.drawGraph();
-    brand_bg.drawGraph(); 
+    //class_bg.drawGraph();
+    //brand_bg.drawGraph(); 
   } else {
-    class_bg15.drawGraph();
-    brand_bg15.drawGraph(); 
+    //class_bg15.drawGraph();
+    //brand_bg15.drawGraph(); 
   }
 }
 

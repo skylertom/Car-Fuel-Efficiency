@@ -42,8 +42,6 @@ Viewport class_vp = new Viewport(root_vp, 0.07f, 0.50f, 0.30f, 0.40f);
 Viewport brand_vp = new Viewport(root_vp, 0.45f, 0.50f, 0.51f, 0.40f);
 
 //views:
-ParallelCoord pc;
-ParallelCoord pc15;
 ClassGraph class_bg;
 ClassGraph class_bg15;
 BrandGraph brand_bg;
@@ -72,11 +70,11 @@ public void draw() {
   drawToggle();
   contr.drawViews();
   if (!year_toggle) {
-    class_bg.drawGraph();
-    brand_bg.drawGraph(); 
+    //class_bg.drawGraph();
+    //brand_bg.drawGraph(); 
   } else {
-    class_bg15.drawGraph();
-    brand_bg15.drawGraph(); 
+    //class_bg15.drawGraph();
+    //brand_bg15.drawGraph(); 
   }
 }
 
@@ -380,8 +378,11 @@ public class BrandGraph {
   Float min, max;
   int vert_ticks = 7;
   int intersect;
+  String name;
+  Controller controller;
  
   BrandGraph(Viewport vp, Table d, String[] vehClasses) {
+    this.name = "brandgraph";
     this.vp = vp;
     data = d;
     mode = null;
@@ -396,11 +397,16 @@ public class BrandGraph {
     filterData();
     getMinMax();
   }
+
+  public void setController(Controller x) {
+    this.controller = x;
+  }
   
   public void setMode(String m) {
     mode = m;
+    println(mode);
   }
-  
+
   public void drawGraph() {
     drawHoriz();
     drawVert();
@@ -556,8 +562,11 @@ public class ClassGraph {
   int extend = 10;
   int intersect;
   DecimalFormat df;
+  Controller controller;
+  String name;
   
   ClassGraph(Viewport vp, Table d) {
+    this.name = "classgraph";
      this.vp = vp;
      data = d;
      classMPG = new HashMap<String, Float>();
@@ -566,7 +575,11 @@ public class ClassGraph {
      filterData();
      getMinMax();
   }
-  
+
+  public void setController(Controller x) {
+    this.controller = x;
+  }
+
   public void filterData() {
     for (int i = 0; i < data.getRowCount(); i++) {
        String vehClass = data.getString(i, "Veh Class");
@@ -581,7 +594,7 @@ public class ClassGraph {
     }
     vehClasses = classMPG.keySet().toArray(new String[0]);
   }
-  
+
   public void getMinMax() {
     for (Float f : classMPG.values()) {
       if (min == 0.0f) {
@@ -611,6 +624,24 @@ public class ClassGraph {
       if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
         if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
           intersect = i; 
+        }
+      }
+    }
+  }
+
+  public void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;
+    float horiz_dist = vp.getW() / classMPG.size();
+    for (int i = 0; i < classMPG.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();    
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          msg.action = "new graph";
+          msg.addCondition(new Condition("Veh Class","=",vehClasses[i]));
+          controller.receiveMsg(msg);
+          return;
         }
       }
     }
@@ -737,8 +768,10 @@ class Controller {
     protected Message preMsg = null;
     ParallelCoord pc;
     ParallelCoord pc15;
-    //Graph sizeGraph;
-    //Graph brandGraph;
+    ClassGraph class_bg;
+    ClassGraph class_bg15;
+    BrandGraph brand_bg;
+    BrandGraph brand_bg15;
     String carSize = null; //the car type in the brand graph
 
     public Controller() {
@@ -750,25 +783,65 @@ class Controller {
         pc.setController(this);
         pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
         pc15.setController(this);
+        class_bg = new ClassGraph(class_vp, data_00);
+        class_bg.setController(this);
+        class_bg15 = new ClassGraph(class_vp, data_15);
+        class_bg15.setController(this);
+        brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
+        brand_bg.setController(this);
+        brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
+        brand_bg15.setController(this);
+    }
+    private void findMax() {
+      if (class_bg.max > class_bg15.max) {
+        class_bg15.max = class_bg.max; 
+      } else {
+        class_bg.max = class_bg15.max; 
+      }
+      if (brand_bg.max > brand_bg15.max) {
+        brand_bg15.max = brand_bg.max; 
+      } else {
+        brand_bg.max = brand_bg15.max; 
+      }  
     }
 
+    public void displayBrands() {
+      if (!year_toggle) {
+        if (class_bg.intersect != -1) {
+          brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
+        }
+      } else if (year_toggle) {
+        if (class_bg15.intersect != -1) {
+          brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
+        }
+      }  
+    }
 
     public void drawViews() {
         if (!year_toggle) {
             pc.draw();
+            class_bg.drawGraph();
+            brand_bg.drawGraph(); 
         }
         else {
             pc15.draw();
+            class_bg15.drawGraph();
+            brand_bg15.drawGraph(); 
         }
-        //sizeGraph.draw();
-        //brandGraph.draw();
     }
 
     public void mousePressed() {
         //reset
     }
     public void mouseReleased() {
-        pc.mouseClick();
+        if (!year_toggle) {
+            pc.mouseClick();
+            class_bg.mouseClick();
+        }
+        else {
+            pc15.mouseClick();
+            class_bg15.mouseClick();
+        }
     }
     
     public void resetMarks() {
@@ -813,7 +886,8 @@ class Controller {
             return;
         }
         if (msg.action.equals("new graph")) {
-            //make brand graph
+            if (!year_toggle) brand_bg.setMode(msg.conds[0].value);
+            else brand_bg15.setMode(msg.conds[0].value);
         }
         makeMarks(msg);
         setMarksOfViews();
@@ -842,6 +916,12 @@ class Message {
 
     public Message setAction(String str) {
         this.action = str;
+        return this;
+    }
+
+    public Message addCondition(Condition x) {
+        if (this.conds == null) this.conds = new Condition[1];
+        this.conds[0] = x;
         return this;
     }
 

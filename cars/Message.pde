@@ -23,6 +23,12 @@ class Message {
         return this;
     }
 
+    Message addCondition(Condition x) {
+        if (this.conds == null) this.conds = new Condition[1];
+        this.conds[0] = x;
+        return this;
+    }
+
     Message setConditions(Condition[] conds) {
         this.conds = conds;
         return this;

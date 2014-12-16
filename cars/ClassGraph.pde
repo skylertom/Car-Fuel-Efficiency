@@ -10,8 +10,11 @@ public class ClassGraph {
   int extend = 10;
   int intersect;
   DecimalFormat df;
+  Controller controller;
+  String name;
   
   ClassGraph(Viewport vp, Table d) {
+    this.name = "classgraph";
      this.vp = vp;
      data = d;
      classMPG = new HashMap<String, Float>();
@@ -20,7 +23,11 @@ public class ClassGraph {
      filterData();
      getMinMax();
   }
-  
+
+  void setController(Controller x) {
+    this.controller = x;
+  }
+
   void filterData() {
     for (int i = 0; i < data.getRowCount(); i++) {
        String vehClass = data.getString(i, "Veh Class");
@@ -35,7 +42,7 @@ public class ClassGraph {
     }
     vehClasses = classMPG.keySet().toArray(new String[0]);
   }
-  
+
   void getMinMax() {
     for (Float f : classMPG.values()) {
       if (min == 0.0) {
@@ -65,6 +72,24 @@ public class ClassGraph {
       if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
         if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
           intersect = i; 
+        }
+      }
+    }
+  }
+
+  void mouseClick() {
+    Message msg = new Message();
+    msg.src = this.name;
+    float horiz_dist = vp.getW() / classMPG.size();
+    for (int i = 0; i < classMPG.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();    
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          msg.action = "new graph";
+          msg.addCondition(new Condition("Veh Class","=",vehClasses[i]));
+          controller.receiveMsg(msg);
+          return;
         }
       }
     }
