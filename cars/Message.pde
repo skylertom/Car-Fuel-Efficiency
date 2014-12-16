@@ -3,12 +3,12 @@ import java.util.ArrayList;
 class Message {
     String src = null;
     Condition[] conds = null;
-    ArrayList<Condition[]> condsOR = null;
+    ArrayList<Condition> condsOR = null;
     String action = "normal";
 
     Message() {}
-    Message addcondOR(Condition[] con) {
-        if (condsOR == null) condsOR = new ArrayList<Condition[]>();
+    Message addcondOR(Condition con) {
+        if (condsOR == null) condsOR = new ArrayList<Condition>();
         condsOR.add(con);
         return this;
     }

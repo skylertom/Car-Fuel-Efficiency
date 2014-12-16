@@ -34,17 +34,11 @@ class Controller {
         //brandGraph.draw();
     }
 
-    //don't do hovering?
-    public void hover() {
-        /*
-        if (hm.isOnMe()) {
-            hm.hover();
-        } else if (nv.isOnMe()) {
-            nv.hover();
-        } else if (cv.isOnMe()) {
-            cv.hover();
-        }
-        */
+    public void mousePressed() {
+        //reset
+    }
+    public void mouseReleased() {
+        pc.mouseClick();
     }
     
     public void resetMarks() {
@@ -60,6 +54,7 @@ class Controller {
         //Type of Car + Brand -> pc needs list of all marks
         //List of Models
     private void makeMarks(Message msg) {
+        pcmarks = new boolean[data_00.getRowCount()];
         for (int i = 0; i < data_00.getRowCount(); i++) {
             TableRow datum = data_00.getRow(i);
             pcmarks[i] = false;
@@ -73,19 +68,14 @@ class Controller {
     }
 
     private void checkORS(Message msg, TableRow r, int i) {
-        for (Condition[] list : msg.condsOR) {
-            if (checkConditions(list, r)) {
+        for (int j = 0; j < msg.condsOR.size(); j++) {
+            if (checkCondition(msg.condsOR.get(j), r)) {
                 pcmarks[i] = true;
-                return;
             }
         }
     }
 
     public void receiveMsg(Message msg) {
-        if (msg.equals(preMsg)) {
-            return;
-        }
-        preMsg = msg;
         if (msg.action.equals("clean")) {
             resetMarks();
             return;

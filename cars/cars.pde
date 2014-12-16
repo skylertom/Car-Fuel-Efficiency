@@ -34,7 +34,7 @@ void draw() {
 }
 
 void mousePressed() {
-  //pc.mousePressed();
+  contr.mousePressed();
 }
 
 void mouseDragged() {
@@ -42,7 +42,7 @@ void mouseDragged() {
 }
 
 void mouseReleased() {
-  //pc.mouseReleased();
+  contr.mouseReleased();
 }
 
 void parseData(boolean notloaded) {
