@@ -57,7 +57,7 @@ public class ClassGraph {
   }
   
   void drawGraph() {
-//    hover();
+    hover();
     drawHoriz();
     drawVert();
     drawLabel();
@@ -105,6 +105,8 @@ public class ClassGraph {
       float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();
       if (vehClasses[i].equals(controller.carSize)) {
         fill(255,0,0); 
+      } else if (this.intersect == i) {
+        fill(100,100,100);
       } else {
         fill(0,0,0);
       }
@@ -136,7 +138,7 @@ public class ClassGraph {
     pushMatrix();
     translate(vp.getX() - (vp.getX() * .7), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
-    text("Average MPG", 0, 0);
+    text("Average Cmb MPG", 0, 0);
     popMatrix();
   }
   
@@ -154,6 +156,13 @@ public class ClassGraph {
       float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      
       fill(0,0,0);
       text(df.format(classMPG.get(vehClasses[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);      
-    } 
+    }
+/*    if (this.intersect != -1) {
+      float horiz_dist = vp.getW() / classMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * this.intersect) + (horiz_dist / 2);
+      float bar_height = (classMPG.get(vehClasses[this.intersect]) / max) * vp.getH();      
+      fill(0,0,0);
+      text(df.format(classMPG.get(vehClasses[this.intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);            
+    } */
   }
 }

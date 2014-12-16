@@ -39,13 +39,13 @@ public class BrandGraph {
   }
 
   void drawGraph() {
+//    hover();
     drawHoriz();
     drawVert();
     vertDetails();
     if (mode != null) {
       brandsMPG = classBrands.get(mode);
       brands = brandsMPG.keySet().toArray(new String[0]);
-      hover();
       drawDetails();
       drawLabel();
     } else {
@@ -109,6 +109,7 @@ public class BrandGraph {
     String toPrint = mode.substring(0, 1).toUpperCase() + mode.substring(1);
     text(toPrint + "s", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
     textSize(12);
+    hover();
     horizDetails();
 //    vertDetails();
   }
@@ -121,6 +122,8 @@ public class BrandGraph {
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
       if (brands[i].equals(controller.brand)) {
         fill(255,0,0); 
+      } else if (this.intersect == i) {
+        fill(100,100,100);
       } else {
         fill(0,0,0);
       }
@@ -134,6 +137,7 @@ public class BrandGraph {
       textAlign(LEFT);
       text(brands[i], -7, 6);
       popMatrix();
+      fill(0,0,0);
     }     
   }
   
@@ -153,7 +157,7 @@ public class BrandGraph {
     pushMatrix();
     translate(vp.getX() - (vp.getX() * .11), vp.getY() + (vp.getH() / 2));
     rotate(-HALF_PI);
-    text("Average MPG", 0, 0);
+    text("Average Cmb MPG", 0, 0);
     popMatrix();     
   }
   
@@ -207,7 +211,16 @@ public class BrandGraph {
       textAlign(CENTER);
       text(df.format(brandsMPG.get(brands[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
       textAlign(LEFT);
-    }      
+    }
+/*    if (this.intersect != -1) {
+      float horiz_dist = vp.getW() / brandsMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * this.intersect) + (horiz_dist / 2);
+      float bar_height = (brandsMPG.get(brands[this.intersect]) / max) * vp.getH();      
+      fill(0,0,0);
+      textAlign(CENTER);
+      text(df.format(brandsMPG.get(brands[this.intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
+      textAlign(LEFT);      
+    }    */
   }
   
 }
