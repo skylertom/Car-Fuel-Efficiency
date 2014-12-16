@@ -108,10 +108,6 @@ void parseTable(Table t) {
       t.removeRow(i--);
     else if (row.getString("Drive").equals(""))
       t.removeRow(i--);
-//    else if (row.getString("Veh Class").equals("small SUV"))
-//      row.setString("Veh Class", "SUV");
-//    else if (row.getString("Veh Class").equals("standard SUV"))
-//      row.setString("Veh Class", "SUV");
     else {
       String x = row.getString("Model");
       if (x.equals(lastrow)) {
