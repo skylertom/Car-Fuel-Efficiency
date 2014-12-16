@@ -109,7 +109,6 @@ public class ClassGraph {
         fill(0,0,0);
       }
       rect(h_ticks - (horiz_dist / 4), vp.getY() + (vp.getH() - bar_height), horiz_dist / 2, bar_height);
-//      fill(0,0,0);
       pushMatrix();
       translate(h_ticks, vp.getY() + vp.getH() + 10);
       rotate(HALF_PI/4);

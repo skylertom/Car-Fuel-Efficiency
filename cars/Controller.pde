@@ -21,6 +21,7 @@ class Controller {
     BrandGraph brand_bg;
     BrandGraph brand_bg15;
     String carSize = null; //the car type in the brand graph
+    String brand = null;
 
     public Controller() {
         initViews();
@@ -86,12 +87,16 @@ class Controller {
         if (!year_toggle) {
             pc.mouseClick();
             class_bg.mouseClick();
-//            brand_bg.mouseClick();
+            if (brand_bg.brandsMPG != null) {
+              brand_bg.mouseClick();
+            }
         }
         else {
             pc15.mouseClick();
             class_bg15.mouseClick();
-//            brand_bg15.mouseClick();
+            if (brand_bg15.brandsMPG != null) {
+              brand_bg15.mouseClick();            
+            }
         }
     }
     
@@ -99,6 +104,7 @@ class Controller {
         if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
         else pcmarks = new boolean[data_15.getRowCount()];
         carSize = null;
+        brand = null;
         setMarksOfViews();
     }
 
@@ -124,8 +130,13 @@ class Controller {
         }
         if (msg.action.equals("new graph")) {
           carSize = msg.conds[0].value;
+          brand = null;
+        } else if (msg.action.equals("brands")) {
+          brand = msg.conds[0].value;
+          carSize = msg.conds[1].value; 
         } else {
           carSize = null; 
+          brand = null;
         }
     }
 
@@ -145,6 +156,9 @@ class Controller {
         if (msg.action.equals("new graph")) {
             if (!year_toggle) brand_bg.setMode(msg.conds[0].value);
             else brand_bg15.setMode(msg.conds[0].value);
+        }
+        if (msg.action.equals("brands")) {
+ 
         }
         makeMarks(msg);
         setMarksOfViews();

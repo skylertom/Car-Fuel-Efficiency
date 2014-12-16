@@ -85,7 +85,10 @@ public class BrandGraph {
       if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
         if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
           msg.action = "brands";
-          msg.addCondition(new Condition("Brand","=",brands[i]));
+          Condition brand_cond = new Condition("Brand","=",brands[i]);
+          Condition class_cond = new Condition("Veh Class","=",mode);
+          Condition[] conditions = new Condition[] {brand_cond, class_cond};
+          msg.setConditions(conditions);
           controller.receiveMsg(msg);
           return;
         }
@@ -116,7 +119,7 @@ public class BrandGraph {
       float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
       line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
       float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
-      if (i == intersect) {
+      if (brands[i].equals(controller.brand)) {
         fill(255,0,0); 
       } else {
         fill(0,0,0);
@@ -190,7 +193,13 @@ public class BrandGraph {
   
   void drawLabel() {
     DecimalFormat df = new DecimalFormat("##.0");
-    if (intersect != -1) {
+    if (controller.brand != null) {
+      for (int i = 0; i < brands.length; i++) {
+        if (controller.brand.equals(brands[i])) {
+          intersect = i;
+          break;
+        } 
+      }      
       float horiz_dist = vp.getW() / brandsMPG.size();
       float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
       float bar_height = (brandsMPG.get(brands[intersect]) / max) * vp.getH();      
