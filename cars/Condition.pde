@@ -24,23 +24,23 @@ class Condition {
         col.equals(cond.col);
     }
 
-    boolean checkConditions(Condition[] conds, String e) {
-        if(conds == null || e == null){
+};
+
+    static boolean checkConditions(Condition[] conds, TableRow r) {
+        if(conds == null || r == null){
             return false;
         }
         boolean and = true;
         for (int i = 0; i < conds.length; i++) {
-            if (!checkCondition(conds[i], e)) return false;
+            if (!checkCondition(conds[i], r)) return false;
         }
         return true;
     }
 
-    boolean checkCondition(Condition cond, String e) {
-        if (cond == null || cond.value == null || e == null) return false;
+    static boolean checkCondition(Condition cond, TableRow r) {
+        if (cond == null || cond.value == null || r == null) return false;
         if (cond.operator.equals("=")) { 
-            return e.equals(cond.value);
+            return r.getString(cond.col).equals(cond.value);
         }
         return false;
     }
-
-}
