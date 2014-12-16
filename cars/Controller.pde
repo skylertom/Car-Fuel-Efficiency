@@ -111,15 +111,28 @@ class Controller {
 
     private void makeMarks(Message msg) {
         resetMarks();
-        for (int i = 0; i < data_00.getRowCount(); i++) {
-            TableRow datum = data_00.getRow(i);
-            pcmarks[i] = false;
-            if (checkConditions(msg.conds, datum)) {
-                pcmarks[i] = true;
-            }
-            else if (msg.condsOR != null) {
-                checkORS(msg, datum, i);
-            }
+        if (!year_toggle) {
+          for (int i = 0; i < data_00.getRowCount(); i++) {
+              TableRow datum = data_00.getRow(i);
+              pcmarks[i] = false;
+              if (checkConditions(msg.conds, datum)) {
+                  pcmarks[i] = true;
+              }
+              else if (msg.condsOR != null) {
+                  checkORS(msg, datum, i);
+              }
+          }
+        } else {
+          for (int i = 0; i < data_15.getRowCount(); i++) {
+              TableRow datum = data_15.getRow(i);
+              pcmarks[i] = false;
+              if (checkConditions(msg.conds, datum)) {
+                  pcmarks[i] = true;
+              }
+              else if (msg.condsOR != null) {
+                  checkORS(msg, datum, i);
+              }
+          }          
         }
         if (msg.action.equals("new graph")) {
           carSize = msg.conds[0].value;
