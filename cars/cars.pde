@@ -29,11 +29,11 @@ void setup() {
 
 void draw() {
   background(255);
-  pc.draw();
+//  pc.draw();
   class_bg.drawGraph();
   brand_bg.drawGraph();
 }
-
+/*
 void mousePressed() {
   pc.mousePressed();
   if (class_bg.intersect != -1) {
@@ -44,7 +44,7 @@ void mousePressed() {
   contr.drawViews();
   class_bg.drawAxes();
 }
-
+*/
 void mousePressed() {
   contr.mousePressed();
 }
