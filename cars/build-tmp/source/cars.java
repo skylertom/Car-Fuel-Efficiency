@@ -3,6 +3,8 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import java.text.DecimalFormat; 
+import java.text.DecimalFormat; 
 import java.util.Iterator; 
 import java.lang.Iterable; 
 import java.awt.Rectangle; 
@@ -30,17 +32,22 @@ Table data_00;
 Table data_15;
 int numRows_00;
 int numRows_15;
+boolean year_toggle;
+float toggle_x, toggle_y, toggle_w, toggle_h;
 
-String[] data_001;
 String pclabels[];
 Viewport root_vp = new Viewport();
-Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.05f, 0.80f, 0.40f);
-Viewport class_vp = new Viewport(root_vp, 0.05f, 0.50f, 0.4f, 0.40f);
-Viewport brand_vp = new Viewport(root_vp, 0.55f, 0.50f, 0.40f, 0.40f);
+Viewport pc_vp = new Viewport(root_vp, 0.1f, 0.03f, 0.80f, 0.40f);
+Viewport class_vp = new Viewport(root_vp, 0.07f, 0.50f, 0.30f, 0.40f);
+Viewport brand_vp = new Viewport(root_vp, 0.45f, 0.50f, 0.51f, 0.40f);
 
 //views:
+ParallelCoord pc;
+ParallelCoord pc15;
 ClassGraph class_bg;
+ClassGraph class_bg15;
 BrandGraph brand_bg;
+BrandGraph brand_bg15;
 
 Controller contr;
 
@@ -50,19 +57,110 @@ public void setup() {
   background(255);
   frame.setResizable(true);
   parseData(true); 
+  year_toggle = false;  
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
   class_bg = new ClassGraph(class_vp, data_00);
+  class_bg15 = new ClassGraph(class_vp, data_15);
+  brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
+  brand_bg15 = new BrandGraph(brand_vp, data_15, class_bg15.vehClasses);
+  findMax();
   contr = new Controller();
 }
 
 public void draw() {
   background(255);
+  drawToggle();
+  contr.drawViews();
+  if (!year_toggle) {
+    class_bg.drawGraph();
+    brand_bg.drawGraph(); 
+  } else {
+    class_bg15.drawGraph();
+    brand_bg15.drawGraph(); 
+  }
+}
+
+public void findMax() {
+  if (class_bg.max > class_bg15.max) {
+    class_bg15.max = class_bg.max; 
+  } else {
+    class_bg.max = class_bg15.max; 
+  }
+  if (brand_bg.max > brand_bg15.max) {
+    brand_bg15.max = brand_bg.max; 
+  } else {
+    brand_bg.max = brand_bg15.max; 
+  }  
+}
+
+public void drawToggle() {
+  fill(255);
+  toggle_x = width * .92f;
+  toggle_y = height *.03f;
+  toggle_w = 75;
+  toggle_h = 25;  
+//  rect(width*.92, height*.03, 100, 30);
+  rect(toggle_x, toggle_y, toggle_w, toggle_h);
+  String toggleText = null;
+  if (!year_toggle) {
+    toggleText = "2000";
+  } else {
+    toggleText = "2015"; 
+  }
+  fill(0,0,0);
+  textAlign(CENTER);
+  text(toggleText, toggle_x + toggle_w/2, toggle_y + toggle_h/2); 
+  textAlign(LEFT);
+
+}
+/*
+void mousePressed() {
+  pc.mousePressed();
+  if (class_bg.intersect != -1) {
+    String vehClass = class_bg.vehClasses[class_bg.intersect];
+//    brand_bg.drawGraph();
+  }
+
   contr.drawViews();
   class_bg.drawAxes();
 }
-
+*/
 public void mousePressed() {
   contr.mousePressed();
+  displayBrands();
+  switchYear();
+}
+
+public void displayBrands() {
+  if (!year_toggle) {
+    if (class_bg.intersect != -1) {
+      brand_bg.setMode(class_bg.vehClasses[class_bg.intersect]); 
+    }
+  } else if (year_toggle) {
+    if (class_bg15.intersect != -1) {
+      brand_bg15.setMode(class_bg15.vehClasses[class_bg15.intersect]);
+    }
+  }  
+}
+
+public void switchYear() {
+  if (mouseX >= toggle_x && mouseX <= toggle_x + toggle_w && mouseY >= toggle_y && mouseY <= toggle_y + toggle_h) {
+    year_toggle = !year_toggle;
+    if (year_toggle) {
+      if (brand_bg.mode != null && !brand_bg.mode.equals("SUV")) {
+        brand_bg15.setMode(brand_bg.mode); 
+      } else {
+        brand_bg15.setMode(null); 
+      }
+    } else {
+      if (brand_bg15.mode != null && !brand_bg15.mode.equals("standard SUV") && !brand_bg15.mode.equals("small SUV")) {
+        brand_bg.setMode(brand_bg15.mode); 
+      } else {
+        brand_bg.setMode(null); 
+      }
+    }
+    contr.resetMarks();
+  }  
 }
 
 public void mouseDragged() {
@@ -78,7 +176,7 @@ public void parseData(boolean notloaded) {
     data_00 = loadTable("all_alpha_00.csv", "header");
     parseTable(data_00);
     saveTable(data_00, "parsed_00.csv");
-    data_15 = loadTable("all_alpha_00.csv", "header");
+    data_15 = loadTable("all_alpha_15.csv", "header");
     parseTable(data_15);
     saveTable(data_15, "parsed_15.csv");
   }
@@ -107,6 +205,10 @@ public void parseTable(Table t) {
       t.removeRow(i--);
     else if (row.getString("Drive").equals(""))
       t.removeRow(i--);
+//    else if (row.getString("Veh Class").equals("small SUV"))
+//      row.setString("Veh Class", "SUV");
+//    else if (row.getString("Veh Class").equals("standard SUV"))
+//      row.setString("Veh Class", "SUV");
     else {
       String x = row.getString("Model");
       if (x.equals(lastrow)) {
@@ -266,68 +368,222 @@ class Axis {
   }
 }
 
+
+
 public class BrandGraph {
   Viewport vp;
   Table data;
+  HashMap<String, HashMap<String, Float>> classBrands;
+  HashMap<String, Float> brandsMPG;
+  String[] brands;
+  String mode;
+  Float min, max;
+  int vert_ticks = 7;
+  int intersect;
  
-  BrandGraph(Viewport vp, Table d) {
+  BrandGraph(Viewport vp, Table d, String[] vehClasses) {
     this.vp = vp;
     data = d;
-  } 
+    mode = null;
+    brands = null;
+    brandsMPG = null;
+    min = 0.0f;
+    max = 0.0f;
+    classBrands = new HashMap<String, HashMap<String, Float>>();
+    for (int i = 0; i < vehClasses.length; i++) {
+      classBrands.put(vehClasses[i], new HashMap<String, Float>()); 
+    }
+    filterData();
+    getMinMax();
+  }
   
+  public void setMode(String m) {
+    mode = m;
+  }
   
+  public void drawGraph() {
+    drawHoriz();
+    drawVert();
+    vertDetails();
+    if (mode != null) {
+      brandsMPG = classBrands.get(mode);
+      brands = brandsMPG.keySet().toArray(new String[0]);
+      hover();
+      drawDetails();
+      drawLabel();
+    } else {
+      textSize(20);
+      text("Click on a bar on the left", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
+      textSize(12);       
+    }
+  }
+  
+  public void hover() {
+    intersect = -1;
+    for (int i = 0; i < brandsMPG.size(); i++) {
+      float horiz_dist = vp.getW() / brandsMPG.size();      
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
+      if (horiz_dist/2 > 20) {
+        horiz_dist = 50; 
+      }      
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          intersect = i; 
+        }
+      }
+    }
+  }  
+  
+  public void drawHoriz() {
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());     
+  }
+  
+  public void drawVert() {
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());     
+  }
+  
+  public void drawDetails() {
+    textSize(20);
+    String toPrint = mode.substring(0, 1).toUpperCase() + mode.substring(1);
+    text(toPrint + "s", vp.getX() + (vp.getW() / 2), vp.getY() - 12);
+    textSize(12);
+    horizDetails();
+//    vertDetails();
+  }
+  
+  public void horizDetails() {
+    for (int i = 0; i < brandsMPG.size(); i++) {
+      float horiz_dist = vp.getW() / brandsMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
+      line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
+      float bar_height = (brandsMPG.get(brands[i]) / max) * vp.getH();
+      if (i == intersect) {
+        fill(255,0,0); 
+      } else {
+        fill(0,0,0);
+      }
+      if (horiz_dist/2 > 20) {
+        horiz_dist = 50; 
+      }
+      rect(h_ticks - (horiz_dist / 4), vp.getY() + (vp.getH() - bar_height), horiz_dist / 2, bar_height);
+      pushMatrix();
+      translate(h_ticks, vp.getY() + vp.getH() + 10);
+      rotate(HALF_PI);
+      textAlign(LEFT);
+      text(brands[i], -7, 6);
+      popMatrix();
+    }     
+  }
+  
+  public void vertDetails() {
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
+    float vert_dist = vp.getH() / vert_ticks;
+    float iter = 0;
+    float max_label = ceil(max);
+    DecimalFormat df = new DecimalFormat("##.0");    
+    for (int i = 0; i < vert_ticks; i++) {
+      float v_ticks = (vert_dist * i) + vp.getY();
+      line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
+      iter = (max_label / vert_ticks) * (vert_ticks - i);
+      textAlign(CENTER, CENTER);
+      text(df.format(iter), vp.getX() - 20, v_ticks);
+    } 
+    pushMatrix();
+    translate(vp.getX() - (vp.getX() * .11f), vp.getY() + (vp.getH() / 2));
+    rotate(-HALF_PI);
+    text("Average MPG", 0, 0);
+    popMatrix();     
+  }
+  
+  public void getMinMax() {
+    for (HashMap<String, Float> brandsMPG : classBrands.values()) {
+      for (Float f : brandsMPG.values()) {
+        if (min == 0.0f) {
+          min = f;
+        } else if (min > f) {
+          min = f; 
+        }
+        if (max < f) {
+          max = f; 
+        }
+      }
+    }  
+  }
+  
+  public void filterData() {
+    for (int i = 0; i < data.getRowCount(); i++) {
+      String vehClass = data.getString(i, "Veh Class");
+      String rowBrand = data.getString(i, "Brand");
+      Float rowMPG = data.getFloat(i, "Cmb MPG");
+      HashMap<String, Float> brandsMPG = classBrands.get(vehClass);
+      Float avg = brandsMPG.get(rowBrand);
+      if (avg == null) {
+        brandsMPG.put(rowBrand, rowMPG);
+        classBrands.put(vehClass, brandsMPG);
+      } else {
+        avg = (avg + rowMPG) / 2;
+        brandsMPG.put(rowBrand, avg);
+        classBrands.put(vehClass, brandsMPG);
+      }
+    }
+//    brands = brandMPG.keySet().toArray(new String[0]);
+   }
+  
+  public void drawLabel() {
+    DecimalFormat df = new DecimalFormat("##.0");
+    if (intersect != -1) {
+      float horiz_dist = vp.getW() / brandsMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
+      float bar_height = (brandsMPG.get(brands[intersect]) / max) * vp.getH();      
+      fill(0,0,0);
+      textAlign(CENTER);
+      text(df.format(brandsMPG.get(brands[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 7);
+      textAlign(LEFT);
+    }      
+  }
   
 }
+
+
 public class ClassGraph {
   Viewport vp;
   Table data;
-  HashMap<String, Float> classes;
+  HashMap<String, Float> classMPG;
+  String[] vehClasses;
   Float min, max;
   int vert_ticks = 7;
   int extend = 10;
+  int intersect;
+  DecimalFormat df;
   
   ClassGraph(Viewport vp, Table d) {
      this.vp = vp;
      data = d;
-     classes = new HashMap<String, Float>();
+     classMPG = new HashMap<String, Float>();
      min = 0.0f;
      max = 0.0f;
      filterData();
+     getMinMax();
   }
   
   public void filterData() {
     for (int i = 0; i < data.getRowCount(); i++) {
        String vehClass = data.getString(i, "Veh Class");
-       Float avg = classes.get(vehClass);
+       Float avg = classMPG.get(vehClass);
        Float rowMPG = data.getFloat(i, "Cmb MPG");
        if (avg == null) {
-         classes.put(vehClass, rowMPG);
+         classMPG.put(vehClass, rowMPG);
        } else {
-         float rowVal = data.getFloat(i, "Cmb MPG");
          avg = (avg + rowMPG) / 2;
-         classes.put(vehClass, avg);
+         classMPG.put(vehClass, avg);
        }
     }
-    println(classes);
+    vehClasses = classMPG.keySet().toArray(new String[0]);
   }
   
-  public void drawAxes() {
-    String[] vehClasses = classes.keySet().toArray(new String[0]);
-    line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW() + extend, vp.getY() + vp.getH());
-    float horiz_dist = vp.getW() / classes.size();
-    for (int i = 0; i < classes.size(); i++) {
-      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2) + extend;
-      line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
-      pushMatrix();
-      translate(h_ticks, vp.getY() + vp.getH() + 10);
-      rotate(HALF_PI/4);
-      textAlign(LEFT);
-      text(vehClasses[i], -7, 6);
-      popMatrix();
-    }
-    
-    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
-    for (Float f : classes.values()) {
+  public void getMinMax() {
+    for (Float f : classMPG.values()) {
       if (min == 0.0f) {
         min = f; 
       } else if (min > f) {
@@ -336,13 +592,85 @@ public class ClassGraph {
       if (f > max) {
         max = f; 
       }
+    }     
+  }
+  
+  public void drawGraph() {
+    hover();
+    drawHoriz();
+    drawVert();
+    drawLabel();
+  }
+  
+  public void hover() {
+    intersect = -1;
+    float horiz_dist = vp.getW() / classMPG.size();
+    for (int i = 0; i < classMPG.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);  
+      float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();    
+      if ((mouseX >= h_ticks - (horiz_dist / 4)) && (mouseX <= h_ticks - (horiz_dist / 4) + horiz_dist / 2)) {
+        if ((mouseY >= (vp.getY() + vp.getH() - bar_height)) && (mouseY <= (vp.getY() + vp.getH()))) {
+          intersect = i; 
+        }
+      }
     }
+  }
+  
+  public void drawHoriz() {
+    //horizontal axis and bars
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX() + vp.getW(), vp.getY() + vp.getH());
+    float horiz_dist = vp.getW() / classMPG.size();
+    for (int i = 0; i < classMPG.size(); i++) {
+      float h_ticks = vp.getX() + (horiz_dist * i) + (horiz_dist / 2);
+      line(h_ticks, vp.getY() + vp.getH(), h_ticks, vp.getY() + vp.getH() + 5);
+      float bar_height = (classMPG.get(vehClasses[i]) / max) * vp.getH();
+      if (i == intersect) {
+        fill(255,0,0); 
+      } else {
+        fill(0,0,0);
+      }
+      rect(h_ticks - (horiz_dist / 4), vp.getY() + (vp.getH() - bar_height), horiz_dist / 2, bar_height);
+//      fill(0,0,0);
+      pushMatrix();
+      translate(h_ticks, vp.getY() + vp.getH() + 10);
+      rotate(HALF_PI/4);
+      textAlign(LEFT);
+      text(vehClasses[i], -7, 6);
+      popMatrix();
+      fill(0,0,0);
+    }
+  }
+  
+  public void drawVert() {
+    //vertical axis
+    line(vp.getX(), vp.getY() + vp.getH(), vp.getX(), vp.getY());
     float vert_dist = vp.getH() / vert_ticks;
+    float iter = 0;
+    float max_label = ceil(max);
+    DecimalFormat df = new DecimalFormat("##.0");
     for (int i = 0; i < vert_ticks; i++) {
       float v_ticks = (vert_dist * i) + vp.getY();
       line(vp.getX() - 5, v_ticks, vp.getX(), v_ticks);
-    }
-//    println(vp.getX(), vp.getY(), vp.getW(), vp.getH());
+      iter = (max_label / vert_ticks) * (vert_ticks - i);
+      textAlign(CENTER, CENTER);
+      text(df.format(iter), vp.getX() - 20, v_ticks);
+    } 
+    pushMatrix();
+    translate(vp.getX() - (vp.getX() * .7f), vp.getY() + (vp.getH() / 2));
+    rotate(-HALF_PI);
+    text("Average MPG", 0, 0);
+    popMatrix();
+  }
+  
+  public void drawLabel() {
+    DecimalFormat df = new DecimalFormat("##.00");
+    if (intersect != -1) {
+      float horiz_dist = vp.getW() / classMPG.size();
+      float h_ticks = vp.getX() + (horiz_dist * intersect) + (horiz_dist / 2);
+      float bar_height = (classMPG.get(vehClasses[intersect]) / max) * vp.getH();      
+      fill(0,0,0);
+      text(df.format(classMPG.get(vehClasses[intersect])), h_ticks, vp.getY() + (vp.getH() - bar_height) - 10);      
+    } 
   }
 }
 class Condition {
@@ -408,6 +736,7 @@ class TypeGraph {
 class Controller {
     protected Message preMsg = null;
     ParallelCoord pc;
+    ParallelCoord pc15;
     //Graph sizeGraph;
     //Graph brandGraph;
     String carSize = null; //the car type in the brand graph
@@ -419,11 +748,18 @@ class Controller {
     public void initViews(){
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
+        pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
+        pc15.setController(this);
     }
 
 
     public void drawViews() {
-        pc.draw();
+        if (!year_toggle) {
+            pc.draw();
+        }
+        else {
+            pc15.draw();
+        }
         //sizeGraph.draw();
         //brandGraph.draw();
     }
@@ -436,7 +772,8 @@ class Controller {
     }
     
     public void resetMarks() {
-        pcmarks = new boolean[data_00.getRowCount()];
+        if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
+        else pcmarks = new boolean[data_15.getRowCount()];
         setMarksOfViews();
     }
 
@@ -631,6 +968,7 @@ class ParallelCoord {
   }
 
   public void draw() {
+    textAlign(LEFT);
     drawData();
     Iterator<String> iter = axes.keySet().iterator();
     while(iter.hasNext()) {

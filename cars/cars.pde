@@ -29,8 +29,6 @@ void setup() {
   parseData(true); 
   year_toggle = false;  
   pclabels = new String[] {"Cyl", "Air Pollution Score","City MPG","Hwy MPG","Cmb MPG","Greenhouse Gas Score"};
-  pc = new ParallelCoord(pc_vp, pclabels, data_00);
-  pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
   class_bg = new ClassGraph(class_vp, data_00);
   class_bg15 = new ClassGraph(class_vp, data_15);
   brand_bg = new BrandGraph(brand_vp, data_00, class_bg.vehClasses);
@@ -42,16 +40,11 @@ void setup() {
 void draw() {
   background(255);
   drawToggle();
-//  pc.draw();
-//  class_bg.drawGraph();
-//  brand_bg.drawGraph();
-
+  contr.drawViews();
   if (!year_toggle) {
-    pc.draw();
     class_bg.drawGraph();
     brand_bg.drawGraph(); 
   } else {
-//    pc15.draw();
     class_bg15.drawGraph();
     brand_bg15.drawGraph(); 
   }
@@ -136,6 +129,7 @@ void switchYear() {
         brand_bg.setMode(null); 
       }
     }
+    contr.resetMarks();
   }  
 }
 

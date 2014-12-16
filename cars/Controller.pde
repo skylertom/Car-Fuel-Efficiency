@@ -15,6 +15,7 @@ class TypeGraph {
 class Controller {
     protected Message preMsg = null;
     ParallelCoord pc;
+    ParallelCoord pc15;
     //Graph sizeGraph;
     //Graph brandGraph;
     String carSize = null; //the car type in the brand graph
@@ -26,11 +27,18 @@ class Controller {
     public void initViews(){
         pc = new ParallelCoord(pc_vp, pclabels, data_00);
         pc.setController(this);
+        pc15 = new ParallelCoord(pc_vp, pclabels, data_15);
+        pc15.setController(this);
     }
 
 
     public void drawViews() {
-        pc.draw();
+        if (!year_toggle) {
+            pc.draw();
+        }
+        else {
+            pc15.draw();
+        }
         //sizeGraph.draw();
         //brandGraph.draw();
     }
@@ -43,7 +51,8 @@ class Controller {
     }
     
     public void resetMarks() {
-        pcmarks = new boolean[data_00.getRowCount()];
+        if (!year_toggle) pcmarks = new boolean[data_00.getRowCount()];
+        else pcmarks = new boolean[data_15.getRowCount()];
         setMarksOfViews();
     }
 
