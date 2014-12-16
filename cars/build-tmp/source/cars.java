@@ -399,12 +399,13 @@ class Condition {
 
 
 boolean pcmarks[] = null;
+TypeGraph typemarks = null;
+class TypeGraph {
+    ArrayList<String>types;
+    ArrayList<Float>percents;
+};
 
 class Controller {
-    
-    //static HashMap<String,String[]> heatMarks;
-    //HashMap<String,Boolean> netMarks;
-    //int catMarks[][];
     protected Message preMsg = null;
     ParallelCoord pc;
     //Graph sizeGraph;
@@ -439,6 +440,7 @@ class Controller {
         setMarksOfViews();
     }
 
+
     public void setMarksOfViews(){
     }
 
@@ -469,10 +471,12 @@ class Controller {
     }
 
     public void receiveMsg(Message msg) {
-        println("click");
         if (msg.action.equals("clean")) {
             resetMarks();
             return;
+        }
+        if (msg.action.equals("new graph")) {
+            //make brand graph
         }
         makeMarks(msg);
         setMarksOfViews();
